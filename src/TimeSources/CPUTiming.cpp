@@ -7,7 +7,6 @@
 
 #include "CPUTiming.h"
 #include <sys/time.h>
-#include <mach/mach_time.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -37,6 +36,7 @@ inline uint64_t unix_time() {
 #endif
 
 #if defined(__MACH__)
+#include <mach/mach_time.h>
 inline uint64_t darwin_time() {
     return mach_absolute_time();
 }
