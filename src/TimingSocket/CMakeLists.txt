@@ -1,0 +1,1 @@
+add_library(TimingSocket OBJECT TimingSocket.cpp TimingSocket.h)

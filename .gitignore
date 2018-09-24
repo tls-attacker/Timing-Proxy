@@ -1,0 +1,11 @@
+# Specify filepatterns you want git to ignore.
+
+.DS_Store
+.idea/
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Debug/
+cmake-build-debug/
+cmake_install.cmake
+networkTimingTool.xcodeproj
