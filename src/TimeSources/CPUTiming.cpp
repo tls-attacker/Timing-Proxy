@@ -9,6 +9,7 @@
 #include <sys/time.h>
 #include <iostream>
 #include <fstream>
+#include <streambuf>
 #include <string>
 #include <iterator>
 
@@ -112,8 +113,9 @@ bool has_constant_tsc() {
     } else {
 #if defined(__linux__)
         std::ifstream infile("/proc/cpuinfo");
-        std::string fileData(std::istreambuf_iterator<char>(infile), std::istreambuf_iterator<char>());
-        return fileData.find(std::string("constant_tsc")) != std::string::npos;
+        std::string fileData((std::istreambuf_iterator<char>(infile)),
+                             std::istreambuf_iterator<char>());
+        return fileData.find("constant_tsc") != std::string::npos;
 #else // not linux (no way to check for constant_tsc so assuming false)
         return false;
 #endif // defined(__linux__)
