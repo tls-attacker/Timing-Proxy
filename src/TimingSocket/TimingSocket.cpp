@@ -6,6 +6,8 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <errno.h>
+#include <cstring>
+#include <stdexcept>
 
 struct addrinfo* retrieveConnectionCandidates(const std::string& host, int port) {
     struct addrinfo hints, *res0;
