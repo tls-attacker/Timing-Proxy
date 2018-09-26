@@ -12,6 +12,7 @@
 #include <streambuf>
 #include <string>
 #include <iterator>
+#include <unistd.h>
 
 #if defined(__x86_64__) || defined(__i386)
 inline uint64_t rdtsc(){
@@ -138,11 +139,12 @@ uint64_t processor_base_clock() {
         // convert to Hz
         return data[0]*1e6;
     }else{
-        // Cannot determine processor base clock
-        // This means that we can only measure relative time measurements
-        // and cannot convert them to nanoseconds
-        // To avoid division by zero later on, we simply return 1
-        return 1;
+        // Cannot determine processor base clock from CPUID
+        // We can instead do a mini benchmark to get a rough result and then round it to get a nice divisor
+        auto time = rdtsc();
+        sleep(1);
+        time = rdtsc() - time;
+        return time - (time % 100000000);
     }
 }
 
