@@ -1,12 +1,12 @@
 //
-//  CPUTiming.hpp
-//  timing
+//  TimeSources.h
+//
 //
 //  Created by Malte Poll on 18.09.18.
 //
 
-#ifndef CPUTiming_hpp
-#define CPUTiming_hpp
+#ifndef TimeSources_h
+#define TimeSources_h
 
 #include <cstdint>
 
@@ -18,10 +18,13 @@ namespace TimeSources {
         bool rdtscp;
     };
     
+    typedef uint64_t (*time_source_func)();
+    
     struct cpu_features get_cpu_features();
-    uint64_t (*best_timesource())();
+    time_source_func best_timesource();
     uint64_t timestampCounter();
     uint64_t osTime();
+    uint64_t clock();
 }
 
-#endif /* CPUTiming_hpp */
+#endif /* TimeSources.h */

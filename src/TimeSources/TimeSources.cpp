@@ -1,11 +1,11 @@
 //
-//  CPUTiming.cpp
-//  timing
+//  TimeSources.cpp
+//
 //
 //  Created by Malte Poll on 18.09.18.
 //
 
-#include "CPUTiming.h"
+#include "TimeSources.h"
 #include <sys/time.h>
 #include <iostream>
 #include <fstream>
@@ -60,6 +60,10 @@ uint64_t TimeSources::osTime() {
 #elif defined(unix)
     return unix_time();
 #endif
+}
+
+uint64_t TimeSources::clock() {
+    return ::clock();
 }
 
 #define BIT(n) (1<<n)
@@ -157,7 +161,7 @@ struct TimeSources::cpu_features TimeSources::get_cpu_features(){
     return features;
 }
 
-uint64_t (*TimeSources::best_timesource())(){
+TimeSources::time_source_func TimeSources::best_timesource(){
     cpu_features features = get_cpu_features();
     if (features.constant_tsc) {
         return timestampCounter;
@@ -166,4 +170,3 @@ uint64_t (*TimeSources::best_timesource())(){
     }
     
 }
-

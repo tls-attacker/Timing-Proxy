@@ -1,1 +1,1 @@
-add_library(TimeSources OBJECT CPUTiming.cpp CPUTiming.h)
+add_library(TimeSources OBJECT TimeSources.cpp TimeSources.h)

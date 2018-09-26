@@ -2,11 +2,13 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <cpuid.h>
+#include <ctime>
 //#include <Kernel/i386/cpuid.h>
 
-#include "TimeSources/CPUTiming.h"
+#include "TimeSources/TimeSources.h"
 #include "pcapMeasure/TimePackets.h"
 #include "TimingSocket/TimingSocket.h"
+#include "Benchmark/Benchmark.h"
 
 int main() {
     
@@ -18,16 +20,14 @@ int main() {
     }
     printf("Processor baseclock: %llu Hz\n", features.processor_base_clock_hz);
     
+    Benchmark os_bench(TimeSources::osTime, 1000);
+    std::cout << "Overhead of os time   : " << os_bench.overhead() << std::endl;
     
+    Benchmark cpu_bench(TimeSources::timestampCounter, 1000);
+    std::cout << "Overhead of cpu time  : " << cpu_bench.overhead() << std::endl;
     
-    
-    uint64_t os_time = TimeSources::osTime();
-    uint64_t cpu_time = TimeSources::timestampCounter();
-    sleep(1);
-    os_time = TimeSources::osTime() - os_time;
-    cpu_time = TimeSources::timestampCounter() - cpu_time;
-    std::cout << "OS Time: " << ((double)os_time / (1e9)) << std::endl;
-    std::cout << "CPU Time: " << ((double)cpu_time / (features.processor_base_clock_hz)) << std::endl;
+    Benchmark clock_bench(TimeSources::clock, 1000);
+    std::cout << "Overhead of clock time: " << clock_bench.overhead() << std::endl;
     
     unsigned int level = 0;
     unsigned int eax = 0;

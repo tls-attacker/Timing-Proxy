@@ -1,5 +1,5 @@
 #include "TimingSocket.h"
-#include "../TimeSources/CPUTiming.h"
+#include "../TimeSources/TimeSources.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
