@@ -33,7 +33,7 @@ uint64_t TimeSources::timestampCounter() {
 inline uint64_t unix_time() {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    return ts.tv_sec*(uint64_t)1000000+ts.tv_nsec;
+    return ts.tv_sec*(uint64_t)1e9+ts.tv_nsec;
 }
 #endif
 
@@ -48,7 +48,7 @@ inline uint64_t darwin_time() {
 inline uint64_t bsd_time() {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC_PRECISE, &ts);
-    return ts.tv_sec*(uint64_t)1000000+ts.tv_nsec;
+    return ts.tv_sec*(uint64_t)1e9+ts.tv_nsec;
 }
 #endif
 
