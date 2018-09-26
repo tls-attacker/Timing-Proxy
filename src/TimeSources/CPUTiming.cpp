@@ -126,11 +126,32 @@ bool has_constant_tsc() {
 #endif // defined(__x86_64__) || defined(__i386)
 }
 
+uint64_t processor_base_clock() {
+    // returns cpu baseclock in Hz
+    // test if CPUID level 16h is supported
+    uint32_t data[4];
+    do_cpuid(0x0, data);
+    if (data[0] >= 0x16) {
+        // query CPUID.16h.EAX
+        // this is the cpu baseclock in MHz
+        do_cpuid(0x16, data);
+        // convert to Hz
+        return data[0]*1e6;
+    }else{
+        // Cannot determine processor base clock
+        // This means that we can only measure relative time measurements
+        // and cannot convert them to nanoseconds
+        // To avoid division by zero later on, we simply return 1
+        return 1;
+    }
+}
+
 struct TimeSources::cpu_features TimeSources::get_cpu_features(){
     struct cpu_features features;
     features.invariant_tsc = has_invariant_tsc();
     features.constant_tsc = has_constant_tsc();
     features.rdtscp = has_rdtscp();
+    features.processor_base_clock_hz = processor_base_clock();
     return features;
 }
 

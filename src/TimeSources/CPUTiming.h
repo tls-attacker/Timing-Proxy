@@ -12,6 +12,7 @@
 
 namespace TimeSources {
     struct cpu_features{
+        uint64_t processor_base_clock_hz;
         bool invariant_tsc;
         bool constant_tsc;
         bool rdtscp;

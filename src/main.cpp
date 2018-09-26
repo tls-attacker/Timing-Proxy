@@ -16,6 +16,9 @@ int main() {
     }else{
         std::cout << "Doesn't have constant_tsc!" << std::endl;
     }
+    printf("Processor baseclock: %llu Hz\n", features.processor_base_clock_hz);
+    
+    
     
     
     uint64_t os_time = TimeSources::osTime();
@@ -23,8 +26,8 @@ int main() {
     sleep(1);
     os_time = TimeSources::osTime() - os_time;
     cpu_time = TimeSources::timestampCounter() - cpu_time;
-    std::cout << "OS Time: " << os_time << std::endl;
-    std::cout << "CPU Time: " << cpu_time << std::endl;
+    std::cout << "OS Time: " << ((double)os_time / (1e9)) << std::endl;
+    std::cout << "CPU Time: " << ((double)cpu_time / (features.processor_base_clock_hz)) << std::endl;
     
     unsigned int level = 0;
     unsigned int eax = 0;
