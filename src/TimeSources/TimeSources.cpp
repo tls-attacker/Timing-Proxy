@@ -163,7 +163,7 @@ struct TimeSources::cpu_features TimeSources::get_cpu_features(){
 
 TimeSources::time_source_func TimeSources::best_timesource(){
     cpu_features features = get_cpu_features();
-    if (features.constant_tsc) {
+    if (features.constant_tsc && features.rdtscp) {
         return timestampCounter;
     }else{
         return osTime;
