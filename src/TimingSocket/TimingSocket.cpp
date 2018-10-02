@@ -80,12 +80,16 @@ uint64_t TimingSocket::writeAndTimeResponse(const void *data, size_t size) {
     return timing;
 }
 
-size_t TimingSocket::read(void *buf, size_t size) {
+ssize_t TimingSocket::read(void *buf, size_t size, bool blocking) {
+    int flags = 0;
+    if (!blocking) {
+        flags |= MSG_DONTWAIT;
+    }
     if (state != SOCKSTATE_ESTABLISHED) {
         throw std::runtime_error(std::string("Socket is not ready for recieving"));
     }
-    size_t size_recieved = ::recv(sock, buf, size, 0);
-    if (size_recieved < 0) {
+    ssize_t size_recieved = ::recv(sock, buf, size, flags);
+    if (size_recieved < 0 && blocking) {
         throw std::runtime_error(std::string("Unable to recieve data. Reason: ")+std::string(strerror(errno)));
     }
     return size_recieved;

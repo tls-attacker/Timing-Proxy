@@ -20,7 +20,7 @@ public:
     void close();
     void write(const void* data, size_t size);
     uint64_t writeAndTimeResponse(const void *data, size_t size);
-    size_t read(void *buf, size_t size);
+    ssize_t read(void *buf, size_t size, bool blocking = true);
     
 };
 
