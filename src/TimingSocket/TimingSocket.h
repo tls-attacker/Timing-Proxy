@@ -2,6 +2,7 @@
 #define TIMING_TIMINGSOCKETS_H
 
 #include <string>
+#include "../TimeSources/TimeSources.h"
 
 enum sockState{
     SOCKSTATE_UNINITIALIZED,
@@ -12,7 +13,9 @@ enum sockState{
 class TimingSocket{
     sockState state = SOCKSTATE_UNINITIALIZED;
     int sock;
+    TimeSources::cpu_features cpu_features;
     uint64_t (*best_timesource)() = nullptr;
+    
     
 public:
     TimingSocket();

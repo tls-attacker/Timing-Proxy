@@ -6,6 +6,7 @@
 //
 
 #include "TimeSources.h"
+#include "../helper/helper.h"
 #include <sys/time.h>
 #include <iostream>
 #include <fstream>
@@ -158,11 +159,21 @@ struct TimeSources::cpu_features TimeSources::get_cpu_features(){
     features.constant_tsc = has_constant_tsc();
     features.rdtscp = has_rdtscp();
     features.processor_base_clock_hz = processor_base_clock();
+    if (features.invariant_tsc) {
+        helper::log("Has invariant tsc");
+    }
+    if (features.constant_tsc) {
+        helper::log("Has constant tsc");
+    }
+    if (features.rdtscp) {
+        helper::log("Has rdtscp");
+    }
+    helper::log((std::string("Baseclock is: ")+std::to_string(features.processor_base_clock_hz)+"Hz").c_str());
+    
     return features;
 }
 
-TimeSources::time_source_func TimeSources::best_timesource(){
-    cpu_features features = get_cpu_features();
+TimeSources::time_source_func TimeSources::best_timesource(struct TimeSources::cpu_features features){
     if (features.constant_tsc && features.rdtscp) {
         return timestampCounter;
     }else{

@@ -1,5 +1,4 @@
 #include "TimingSocket.h"
-#include "../TimeSources/TimeSources.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -25,7 +24,8 @@ struct addrinfo* retrieveConnectionCandidates(const std::string& host, int port)
 }
 
 TimingSocket::TimingSocket(){
-    best_timesource = TimeSources::best_timesource();
+    cpu_features = TimeSources::get_cpu_features();
+    best_timesource = TimeSources::best_timesource(cpu_features);
 }
 
 void TimingSocket::connect(std::string host, int port) {

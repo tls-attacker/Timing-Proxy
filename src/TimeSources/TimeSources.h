@@ -21,7 +21,7 @@ namespace TimeSources {
     typedef uint64_t (*time_source_func)();
     
     struct cpu_features get_cpu_features();
-    time_source_func best_timesource();
+    time_source_func best_timesource(struct TimeSources::cpu_features features);
     uint64_t timestampCounter();
     uint64_t osTime();
     uint64_t clock();
