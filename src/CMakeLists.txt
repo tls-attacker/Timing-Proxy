@@ -10,3 +10,6 @@ add_executable(networkTimingTool main.cpp helper/helper.h $<TARGET_OBJECTS:pcapM
 find_package(PCAP)
 include_directories(${PCAP_INCLUDE_DIR})
 target_link_libraries(networkTimingTool ${PCAP_LIBRARY})
+
+add_subdirectory(TestServer)
+add_subdirectory(TestClient)
