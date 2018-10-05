@@ -3,6 +3,7 @@
 #include <thread>
 #include <ctime>
 #include <cstdlib>
+#include <cstring>
 #include <random>
 #include "../ServerSocket/ServerSocket.h"
 
