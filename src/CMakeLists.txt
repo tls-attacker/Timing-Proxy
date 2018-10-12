@@ -1,11 +1,11 @@
-add_subdirectory(pcapMeasure)
+add_subdirectory(PcapWrapper)
 add_subdirectory(TimeSources)
 add_subdirectory(TimingSocket)
 add_subdirectory(Benchmark)
 add_subdirectory(ServerSocket)
 add_subdirectory(TimingProxy)
 
-add_executable(networkTimingTool main.cpp helper/helper.h $<TARGET_OBJECTS:pcapMeasure> $<TARGET_OBJECTS:TimeSources> $<TARGET_OBJECTS:TimingSocket> $<TARGET_OBJECTS:Benchmark> $<TARGET_OBJECTS:ServerSocket> $<TARGET_OBJECTS:TimingProxy>)
+add_executable(networkTimingTool main.cpp helper/helper.h $<TARGET_OBJECTS:PcapWrapper> $<TARGET_OBJECTS:TimeSources> $<TARGET_OBJECTS:TimingSocket> $<TARGET_OBJECTS:Benchmark> $<TARGET_OBJECTS:ServerSocket> $<TARGET_OBJECTS:TimingProxy>)
 
 find_package(PCAP)
 include_directories(${PCAP_INCLUDE_DIR})

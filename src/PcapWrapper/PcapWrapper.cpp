@@ -2,7 +2,7 @@
 // Created by Malte Poll on 18.09.18.
 //
 
-#include "TimePackets.h"
+#include "PcapWrapper.h"
 
 #include <string>
 
@@ -70,23 +70,23 @@ fail:
     return (NULL);
 }
 
-TimePackets::TimePackets() {
-
+PcapWrapper::PcapWrapper() {
     device = pcap_lookupdev(errbuf);
     if (device == NULL) {
         fprintf(stderr, "Couldn't find default device: %s\n", errbuf);
+        throw;
     }
 
     init();
 }
 
-TimePackets::TimePackets(char *device) {
+PcapWrapper::PcapWrapper(const char *device) {
     this->device = device;
 
     init();
 }
 
-void TimePackets::init() {
+void PcapWrapper::init() {
     printf("Device: %s\n", device);
 
     handle = custom_pcap_open_live(device, BUFSIZ, 1, 1000, errbuf);
@@ -113,7 +113,7 @@ void TimePackets::init() {
     printf("Initialized device for listening\n");
 }
 
-void TimePackets::setFilter(char* remote_host, int remote_port){
+void PcapWrapper::setFilter(const char* remote_host, int remote_port){
     std::string filter = "tcp port "+std::to_string(remote_port)+" and src "+remote_host;
     
     bpf_u_int32 mask;        /* The netmask of our sniffing device */

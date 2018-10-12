@@ -13,7 +13,7 @@
 #define BASESLEEP (100ns)
 #define SLEEPTIMEA (0ns)
 #define SLEEPTIMEB (2500ns)
-#define NOISERANGE (0ns)
+#define NOISERANGE (500ns)
 
 void initRandomSeed() {
     srand(time(0));

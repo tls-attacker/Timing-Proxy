@@ -6,7 +6,7 @@
 //#include <Kernel/i386/cpuid.h>
 
 #include "TimeSources/TimeSources.h"
-#include "pcapMeasure/TimePackets.h"
+#include "PcapWrapper/PcapWrapper.h"
 #include "TimingSocket/TimingSocket.h"
 #include "Benchmark/Benchmark.h"
 #include "TimingProxy/TimingProxy.h"
