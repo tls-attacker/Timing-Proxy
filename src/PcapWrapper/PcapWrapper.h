@@ -6,6 +6,8 @@
 #define PCAP_WRAPPER_H
 
 #include <pcap.h>
+#include <unistd.h>
+#include <thread>
 
 
 class PcapWrapper {
@@ -13,7 +15,7 @@ class PcapWrapper {
     const char* device;
     pcap_t *handle;
     struct bpf_program fp;
-
+    std::thread *loop_thread = nullptr;
     void init();
 
 public:
@@ -21,6 +23,9 @@ public:
     PcapWrapper(const char* device);
 
     void setFilter(const char* remote_host, int remote_port);
+    void startLoop();
+    void stopLoop();
+    uint64_t timingForPacket(const void* buf, size_t buflen);
 };
 
 
