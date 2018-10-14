@@ -2,6 +2,8 @@
 #include <errno.h>
 #include <stdexcept>
 #include <unistd.h>
+#include <strings.h>
+#include <cstring>
 
 ServerSocket::ServerSocket() {
     
@@ -18,7 +20,7 @@ void ServerSocket::bind(int port) {
     this->port = port;
     struct sockaddr_in6 serv_addr;
     bzero((char *) &serv_addr, sizeof(serv_addr));
-    serv_addr.sin6_len = sizeof(serv_addr);
+    //serv_addr.sin6_len = sizeof(serv_addr);
     serv_addr.sin6_family = AF_INET6;
     //serv_addr.sin6_addr = INADDR_ANY;
     serv_addr.sin6_port = htons(port);

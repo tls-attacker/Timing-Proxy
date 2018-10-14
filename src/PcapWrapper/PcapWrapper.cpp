@@ -239,7 +239,7 @@ void loop() {
 }
 
 void PcapWrapper::startLoop() {
-    loop_thread = new std::thread(loop);
+    //loop_thread = new std::thread(loop);
 }
 
 void PcapWrapper::stopLoop() {

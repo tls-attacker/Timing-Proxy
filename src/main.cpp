@@ -14,8 +14,8 @@
 int main() {
     //TimingProxy tp(4444, 5555);
     //tp.run();
-    PcapWrapper pc = PcapWrapper("lo0");
-    pc.setFilter("localhost", 8888);
+    PcapWrapper pc = PcapWrapper("lo");
+    pc.setFilter("127.0.0.1", 8888);
     char buf[10] = "test";
     pc.timingForPacket((void*)buf, 10);
     return 0;
