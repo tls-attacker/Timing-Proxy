@@ -11,6 +11,9 @@ bool Ipv6Parser::isExtensionHeader(uint8_t next_hdr) {
 }
 
 void Ipv6Parser::parseHeader(void* packet, size_t size) {
+    if (size < MAIN_HEADER_SIZE) {
+        throw std::invalid_argument("Ipv6 header must be at least 40 bytes");
+    }
     this->packet = packet;
     this->packet_size = size;
     const struct ipv6_header * header = (struct ipv6_header*)packet;
@@ -24,7 +27,7 @@ void Ipv6Parser::parseHeader(void* packet, size_t size) {
     payload_size = ntohs(header->payload_len);
     if (packet_size < 40 || (packet_size-40) < payload_size ) {
         /* payload size cannot be bigger than the packet itself */
-        throw;
+        throw std::invalid_argument("payload size cannot be bigger than payload itself");
     }
 
     hop_limit = header->hop_limit;

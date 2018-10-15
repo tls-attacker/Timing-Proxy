@@ -5,8 +5,12 @@
 #include "EthernetParser.h"
 #include "../Ipv4/Ipv4Parser.h"
 #include "../Ipv6/Ipv6Parser.h"
+#include <stdexcept>
 
 void EthernetParser::parseHeader(void* packet, size_t size) {
+    if (size < HEADER_SIZE) {
+        throw std::invalid_argument("Packet size too small for header");
+    }
     this->packet = packet;
     this->packet_size = size;
     const ethernet_header* header = (ethernet_header*)packet;

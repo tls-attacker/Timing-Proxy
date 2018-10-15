@@ -9,6 +9,7 @@
 #include <netinet/in.h>
 
 class Ipv4Parser : public PacketParser {
+    const static size_t MIN_HEADER_LEN = 20;
     enum IpProto {
         tcp = 0x6,
         udp = 0x11,
@@ -28,7 +29,7 @@ class Ipv4Parser : public PacketParser {
     size_t header_length;
     IpProto proto = other;
 public:
-    void parseHeader(void* packet, size_t size);
+    void parseHeader(void* packet, size_t size) override;
     static void decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size);
 };
 

@@ -2,9 +2,13 @@
 // Created by malte on 14.10.18.
 //
 
+#include <stdexcept>
 #include "TcpParser.h"
 
 void TcpParser::parseHeader(void* packet, size_t size) {
+    if (size < MIN_HEADER_LENGTH) {
+        throw std::invalid_argument("TCP header must be at least 20 bytes");
+    }
     this->packet = packet;
     this->packet_size = size;
     const struct tcp_header * header = (struct tcp_header*)packet;

@@ -73,7 +73,7 @@ class Ipv6Parser : public PacketParser {
     const in6_addr* addr_dst;
     bool isExtensionHeader(uint8_t next_hdr);
 public:
-    void parseHeader(void* packet, size_t size);
+    void parseHeader(void* packet, size_t size) override;
     static void decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size);
 };
 

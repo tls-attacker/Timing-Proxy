@@ -8,6 +8,7 @@
 #include "../PacketParser.h"
 
 class TcpParser : public PacketParser {
+    const static size_t MIN_HEADER_LENGTH = 20;
     struct tcp_header {
         uint16_t th_sport; // source port
         uint16_t th_dport; // destination port
@@ -25,7 +26,7 @@ class TcpParser : public PacketParser {
     uint32_t ack = 0;
     size_t header_length = 0;
 public:
-    void parseHeader(void* packet, size_t size);
+    void parseHeader(void* packet, size_t size) override;
     static void decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size);
 };
 

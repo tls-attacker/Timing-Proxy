@@ -2,11 +2,15 @@
 // Created by malte on 14.10.18.
 //
 
+#include <stdexcept>
 #include "Ipv4Parser.h"
 #include "../Tcp/TcpParser.h"
 #include "../Udp/UdpParser.h"
 
 void Ipv4Parser::parseHeader(void *packet, size_t size) {
+    if (size < MIN_HEADER_LEN) {
+        throw std::invalid_argument("Ipv4 packet must be at least 20 bytes");
+    }
     this->packet = packet;
     this->packet_size = size;
     const struct ipv4_header * header = (struct ipv4_header*)packet;

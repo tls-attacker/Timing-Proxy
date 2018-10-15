@@ -1,0 +1,3 @@
+add_library(PacketParserTest OBJECT PacketParserTest.cpp)
+target_link_libraries(PacketParserTest gmock)
+#add_test(NAME PacketParserTest COMMAND PacketParserTest)

@@ -27,7 +27,7 @@ class EthernetParser : public PacketParser{
     EtherType type = EtherType::other;
 
 public:
-    void parseHeader(void* package, size_t size);
+    void parseHeader(void* package, size_t size) override;
     static void decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size);
 };
 
