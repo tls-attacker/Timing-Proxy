@@ -4,6 +4,7 @@
 
 #include <stdexcept>
 #include "TcpParser.h"
+#include <arpa/inet.h>
 
 void TcpParser::parseHeader(void* packet, size_t size) {
     if (size < MIN_HEADER_LENGTH) {

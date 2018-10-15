@@ -4,6 +4,8 @@
 
 #include <stdexcept>
 #include "UdpParser.h"
+#include <arpa/inet.h>
+
 void UdpParser::parseHeader(void* packet, size_t size) {
     if (size < HEADER_LEN) {
         throw std::invalid_argument("UDP header must be at least 8 bytes");

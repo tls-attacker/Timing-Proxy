@@ -6,7 +6,7 @@
 #define NETWORKTIMINGTOOL_PACKETPARSER_H
 
 #include <cstdlib>
-#include <arpa/inet.h>
+#include <cstdint>
 
 class PacketParser {
 protected:

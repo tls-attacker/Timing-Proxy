@@ -6,6 +6,8 @@
 #include "../Tcp/TcpParser.h"
 #include "../Udp/UdpParser.h"
 
+#include <arpa/inet.h>
+
 bool Ipv6Parser::isExtensionHeader(uint8_t next_hdr) {
     return HeaderTypeMap.at((NextHeaderType)next_hdr)==hk_extension_header;
 }
