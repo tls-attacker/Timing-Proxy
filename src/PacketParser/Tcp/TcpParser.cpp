@@ -4,16 +4,16 @@
 
 #include "TcpParser.h"
 
-void TcpParser::parseHeader(void* package, size_t size) {
-    this->package = package;
+void TcpParser::parseHeader(void* packet, size_t size) {
+    this->packet = packet;
     this->packet_size = size;
-    const struct tcp_header * header = (struct tcp_header*)package;
+    const struct tcp_header * header = (struct tcp_header*)packet;
     sport = ntohs(header->th_sport);
     dport = ntohs(header->th_dport);
     seq = ntohl(header->th_seq);
     ack = ntohl(header->th_ack);
     header_length = ((header->th_offx2 & 0xf0)>>4)*4;
-    payload = (uint8_t*)package + header_length;
+    payload = (uint8_t*)packet + header_length;
     payload_size = packet_size - header_length;
 }
 

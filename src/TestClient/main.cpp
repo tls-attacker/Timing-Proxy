@@ -3,6 +3,8 @@
 #include <thread>
 #include <ctime>
 #include <cstdlib>
+#include <cstring>
+#include <algorithm>
 #include "../TimingSocket/TimingSocket.h"
 
 using namespace std::chrono_literals;

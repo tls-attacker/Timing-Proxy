@@ -7,6 +7,7 @@
 
 #include "../PacketParser.h"
 #include <linux/in6.h>
+#include <map>
 
 class Ipv6Parser : public PacketParser {
     static const size_t MAIN_HEADER_SIZE = 40;
@@ -42,27 +43,37 @@ class Ipv6Parser : public PacketParser {
         tst2       = 0xfe,
     };
 
-    const static size_t NUM_EXTENSION_HEADERS = 11;
-    constexpr static uint8_t EXTENSION_HEADERS[NUM_EXTENSION_HEADERS] = {
-        NextHeaderType::hopopt,
-        NextHeaderType::ipv6_route,
-        NextHeaderType::ipv6_frag,
-        NextHeaderType::esp,
-        NextHeaderType::ah,
-        NextHeaderType::ipv6_opts,
-        NextHeaderType::mobility,
-        NextHeaderType::hip,
-        NextHeaderType::shim6,
-        NextHeaderType::tst1,
-        NextHeaderType::tst2
+    enum NextHeaderKind {
+        hk_not_implemented = 0,
+        hk_payload,
+        hk_extension_header,
+        hk_no_next,
     };
+
+    const std::map<enum NextHeaderType, NextHeaderKind> HeaderTypeMap = {
+            {hopopt, hk_extension_header},
+            {tcp, hk_payload},
+            {udp, hk_payload},
+            {ipv6_route, hk_extension_header},
+            {ipv6_frag, hk_extension_header},
+            {esp, hk_extension_header},
+            {ah, hk_extension_header},
+            {ipv6_nonxt, hk_no_next},
+            {ipv6_opts, hk_extension_header},
+            {mobility, hk_extension_header},
+            {hip, hk_extension_header},
+            {shim6, hk_extension_header},
+            {tst1, hk_extension_header},
+            {tst2, hk_extension_header},
+    };
+
     uint8_t hop_limit = 0;
     uint8_t next_hdr;
     const in6_addr* addr_src;
     const in6_addr* addr_dst;
     bool isExtensionHeader(uint8_t next_hdr);
 public:
-    void parseHeader(void* package, size_t size);
+    void parseHeader(void* packet, size_t size);
     static void decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size);
 };
 

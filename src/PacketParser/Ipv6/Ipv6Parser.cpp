@@ -4,21 +4,17 @@
 
 #include "Ipv6Parser.h"
 #include "../Tcp/TcpParser.h"
+#include "../Udp/UdpParser.h"
 
 bool Ipv6Parser::isExtensionHeader(uint8_t next_hdr) {
-    for (int i = 0; i < NUM_EXTENSION_HEADERS; ++i) {
-        if (next_hdr == EXTENSION_HEADERS[i]) {
-            return true;
-        }
-    }
-    return false;
+    return HeaderTypeMap.at((NextHeaderType)next_hdr)==hk_extension_header;
 }
 
-void Ipv6Parser::parseHeader(void* package, size_t size) {
-    this->package = package;
+void Ipv6Parser::parseHeader(void* packet, size_t size) {
+    this->packet = packet;
     this->packet_size = size;
-    const struct ipv6_header * header = (struct ipv6_header*)package;
-    uint8_t version = (uint8_t)header->ver_trafcl_flow >> 27;
+    const struct ipv6_header * header = (struct ipv6_header*)packet;
+    uint8_t version = (header->ver_trafcl_flow & 0xff)>>4;
     if (version != 0x6) {
         throw;
     }
@@ -42,7 +38,7 @@ void Ipv6Parser::parseHeader(void* package, size_t size) {
             /* extension headers are always multiples of 64 byte in size */
             throw;
         }
-        next_hdr = header->next_hdr;
+        next_hdr = current_header->next_hdr;
         size_t offset_to_next_header = (size_t)current_header->hdr_len*8+8;
         if (offset_to_next_header > payload_size) {
             /* there must be enough space left in the payload to contain the next header */
@@ -51,7 +47,7 @@ void Ipv6Parser::parseHeader(void* package, size_t size) {
         payload_size -= offset_to_next_header;
         current_header = (ipv6_ext_header*)((uint8_t*)current_header+offset_to_next_header);
     }
-    if (current_header->next_hdr == NextHeaderType::ipv6_nonxt) {
+    if (next_hdr == NextHeaderType::ipv6_nonxt) {
         /* There is no payload.*/
         payload = nullptr;
         payload_size = 0;
@@ -71,6 +67,9 @@ void Ipv6Parser::decodeUntil(Layer layer, void* packet, size_t size, void** payl
         switch (current_parser.next_hdr) {
             case NextHeaderType::tcp:
                 TcpParser::decodeUntil(layer, current_parser.getPayload(), current_parser.getPayloadSize(), payload, payload_size);
+                break;
+            case NextHeaderType::udp:
+                UdpParser::decodeUntil(layer, current_parser.getPayload(), current_parser.getPayloadSize(), payload, payload_size);
                 break;
             default:
                 throw;

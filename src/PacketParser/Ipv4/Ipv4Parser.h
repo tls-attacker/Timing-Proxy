@@ -11,6 +11,7 @@
 class Ipv4Parser : public PacketParser {
     enum IpProto {
         tcp = 0x6,
+        udp = 0x11,
         other
     };
     struct ipv4_header {
@@ -27,7 +28,7 @@ class Ipv4Parser : public PacketParser {
     size_t header_length;
     IpProto proto = other;
 public:
-    void parseHeader(void* package, size_t size);
+    void parseHeader(void* packet, size_t size);
     static void decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size);
 };
 

@@ -10,7 +10,7 @@
 
 class PacketParser {
 protected:
-    void* package = nullptr;
+    void* packet = nullptr;
     void* payload = nullptr;
     size_t packet_size = 0;
     size_t payload_size = 0;
@@ -20,9 +20,10 @@ public:
         ethernet,
         ipv4,
         ipv6,
-        tcp
+        tcp,
+        udp
     };
-    virtual void parseHeader(void* package, size_t size) = 0;
+    virtual void parseHeader(void* packet, size_t size) = 0;
     static void decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size);
     void* getPayload();
     size_t getPayloadSize();

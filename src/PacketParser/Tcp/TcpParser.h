@@ -25,7 +25,7 @@ class TcpParser : public PacketParser {
     uint32_t ack = 0;
     size_t header_length = 0;
 public:
-    void parseHeader(void* package, size_t size);
+    void parseHeader(void* packet, size_t size);
     static void decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size);
 };
 

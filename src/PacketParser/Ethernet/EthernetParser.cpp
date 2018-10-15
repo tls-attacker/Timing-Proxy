@@ -6,13 +6,13 @@
 #include "../Ipv4/Ipv4Parser.h"
 #include "../Ipv6/Ipv6Parser.h"
 
-void EthernetParser::parseHeader(void* package, size_t size) {
-    this->package = package;
+void EthernetParser::parseHeader(void* packet, size_t size) {
+    this->packet = packet;
     this->packet_size = size;
-    const ethernet_header* header = (ethernet_header*)package;
+    const ethernet_header* header = (ethernet_header*)packet;
     dhost_addr = header->ether_dhost;
     shost_addr = header->ether_shost;
-    payload = (u_char*)package + EthernetParser::HEADER_SIZE;
+    payload = (u_char*)packet + EthernetParser::HEADER_SIZE;
     payload_size = packet_size - EthernetParser::HEADER_SIZE;
     type = (EtherType)ntohs(header->ether_type);
 }
@@ -36,5 +36,4 @@ void EthernetParser::decodeUntil(Layer layer, void* packet, size_t size, void** 
                 break;
         }
     }
-
 }
