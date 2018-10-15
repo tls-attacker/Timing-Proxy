@@ -7,5 +7,6 @@ CMakeFiles/
 CMakeScripts/
 Debug/
 cmake-build-debug/
+cmake-build-debug-*/
 cmake_install.cmake
 *.xcodeproj
