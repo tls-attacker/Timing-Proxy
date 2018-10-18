@@ -13,6 +13,6 @@ size_t PacketParser::getPayloadSize() {
     return payload_size;
 }
 
-void PacketParser::decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size) {
-    EthernetParser::decodeUntil(layer, packet, size, payload, payload_size);
+void PacketParser::decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size, Artefacts* artefacts) {
+    EthernetParser::decodeUntil(layer, packet, size, payload, payload_size, artefacts);
 }

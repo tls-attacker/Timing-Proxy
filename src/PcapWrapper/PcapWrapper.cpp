@@ -94,7 +94,7 @@ void PcapWrapper::init() {
 
     handle = custom_pcap_open_live(device, BUFSIZ, 1, 1000, errbuf);
     if (handle == NULL) {
-        fprintf(stderr, "Couldn't open device %s: %s\n", device, errbuf);
+        fprintf(stderr, "Couldn't open device %s: %s\nThis is probably a permission issue.", device, errbuf);
         throw;
     }
     int precision = pcap_get_tstamp_precision(handle);
@@ -112,12 +112,14 @@ void PcapWrapper::init() {
             printf("Using nanosecond resolution\n");
             break;
     }
-    
+    linktype = (PcapLoopCallback::LinkType)pcap_datalink(handle);
+    usrdata->linktype = linktype;
+    usrdata->handle = handle;
     printf("Initialized device for listening\n");
 }
 
-void PcapWrapper::setFilter(const char* remote_host, int remote_port){
-    std::string filter = "tcp port "+std::to_string(remote_port)+" and (src "+remote_host + " or dst "+remote_host+")";
+void PcapWrapper::setFilter(const char* remote_host, uint16_t remote_port){
+    std::string filter = "((src port "+std::to_string(remote_port)+" and src "+remote_host + ") or (dst port "+std::to_string(remote_port)+" and dst "+remote_host+"))";
     std::cout << filter << std::endl;
     
     bpf_u_int32 mask;        /* The netmask of our sniffing device */
@@ -137,39 +139,25 @@ void PcapWrapper::setFilter(const char* remote_host, int remote_port){
         fprintf(stderr, "Couldn't install filter %s: %s\n", filter.c_str(), pcap_geterr(handle));
         throw;
     }
+    usrdata->remote_host = remote_host;
+    usrdata->remote_port = remote_port;
 }
 
 uint64_t PcapWrapper::timingForPacket(const void* buf, size_t buflen) {
-    bool foundPacket = false;
-    struct pcap_pkthdr header;
-    const u_char *packet = nullptr;
-    const char *payload; /* Packet payload */
-    u_int size_tcp;
-    while (!foundPacket) {
-        while (!packet) {
-            packet = pcap_next(handle, &header);
-        }
-        PacketParser::decodeUntil(PacketParser::Layer::tcp, packet, header.len, & payload, &size_tcp);
-
-        printf("Got a tcp payload\n");
-        printf("%s\n", packet);
-        
-    loop_err:
-        packet = nullptr;
-    }
     return 0;
-    
-
 }
 
-void loop() {
+void loop(PcapLoopCallback::UserData * usrdata) {
     printf("%s\n", "Starting loop!");
+    pcap_loop(usrdata->handle, -1, PcapLoopCallback::handlePacket, (u_char*)usrdata);
 }
 
 void PcapWrapper::startLoop() {
     //loop_thread = new std::thread(loop);
+    // TODO: Implement threading
+    loop(usrdata);
 }
 
 void PcapWrapper::stopLoop() {
-    
+
 }

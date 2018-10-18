@@ -28,7 +28,7 @@ class EthernetParser : public PacketParser{
 
 public:
     void parseHeader(void* package, size_t size) override;
-    static void decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size);
+    static void decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size, Artefacts* artefacts);
 };
 
 

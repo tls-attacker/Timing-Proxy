@@ -14,3 +14,9 @@ target_link_libraries(networkTimingTool ${PCAP_LIBRARY})
 
 add_subdirectory(TestServer)
 add_subdirectory(TestClient)
+
+#add_custom_command(
+#        TARGET networkTimingTool POST_BUILD
+#        COMMAND /usr/bin/sudo /usr/sbin/setcap cap_net_raw,cap_net_admin=eip ${CMAKE_BINARY_DIR}/src/networkTimingTool
+#        COMMENT "Setting capabilities to use libpcap without root"
+#        )

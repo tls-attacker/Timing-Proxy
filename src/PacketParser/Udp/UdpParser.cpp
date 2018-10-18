@@ -4,6 +4,7 @@
 
 #include <stdexcept>
 #include "UdpParser.h"
+#include "../Artefacts/Artefacts.h"
 #include <arpa/inet.h>
 
 void UdpParser::parseHeader(void* packet, size_t size) {
@@ -23,12 +24,23 @@ void UdpParser::parseHeader(void* packet, size_t size) {
     payload_size = packet_size - HEADER_LEN;
 }
 
-void UdpParser::decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size) {
+void UdpParser::decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size, Artefacts* artefacts) {
     if (layer != Layer::udp) {
         throw;
     }
     UdpParser current_parser;
     current_parser.parseHeader(packet, size);
+    artefacts->payload_type = Layer::udp;
+    artefacts->src_port = current_parser.getSrcPort();
+    artefacts->dst_port = current_parser.getDstPort();
     *payload = current_parser.getPayload();
     *payload_size = current_parser.getPayloadSize();
+}
+
+uint16_t UdpParser::getSrcPort() {
+    return sport;
+}
+
+uint16_t UdpParser::getDstPort() {
+    return dport;
 }

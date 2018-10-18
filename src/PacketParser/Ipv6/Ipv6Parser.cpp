@@ -5,8 +5,10 @@
 #include "Ipv6Parser.h"
 #include "../Tcp/TcpParser.h"
 #include "../Udp/UdpParser.h"
+#include "../Artefacts/Artefacts.h"
 
 #include <arpa/inet.h>
+#include <cstring>
 
 bool Ipv6Parser::isExtensionHeader(uint8_t next_hdr) {
     return HeaderTypeMap.at((NextHeaderType)next_hdr)==hk_extension_header;
@@ -33,8 +35,13 @@ void Ipv6Parser::parseHeader(void* packet, size_t size) {
     }
 
     hop_limit = header->hop_limit;
-    addr_src = &header->addr_src;
-    addr_dst = &header->addr_dst;
+    if(inet_ntop(AF_INET6, &header->addr_src, addr_src, INET6_ADDRSTRLEN) == nullptr) {
+        throw std::invalid_argument("Packet has invalid ipv6 source address");
+    }
+
+    if(inet_ntop(AF_INET6, &header->addr_dst, addr_dst, INET6_ADDRSTRLEN) == nullptr) {
+        throw std::invalid_argument("Packet has invalid ipv6 destination address");
+    }
 
     next_hdr = header->next_hdr;
     const struct ipv6_ext_header* current_header = (ipv6_ext_header*)(header+1);
@@ -62,23 +69,34 @@ void Ipv6Parser::parseHeader(void* packet, size_t size) {
     payload = (void*)current_header;
 }
 
-void Ipv6Parser::decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size) {
+void Ipv6Parser::decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size, Artefacts* artefacts) {
     Ipv6Parser current_parser;
     current_parser.parseHeader(packet, size);
+    artefacts->ip_type = Layer::ipv6;
+    strncpy(artefacts->src_ip, current_parser.getSrcAddress(), INET6_ADDRSTRLEN);
+    strncpy(artefacts->dst_ip, current_parser.getDstAddress(), INET6_ADDRSTRLEN);
     if (layer == Layer::ipv6) {
         *payload = current_parser.getPayload();
         *payload_size = current_parser.getPayloadSize();
     }else{
         switch (current_parser.next_hdr) {
             case NextHeaderType::tcp:
-                TcpParser::decodeUntil(layer, current_parser.getPayload(), current_parser.getPayloadSize(), payload, payload_size);
+                TcpParser::decodeUntil(layer, current_parser.getPayload(), current_parser.getPayloadSize(), payload, payload_size, artefacts);
                 break;
             case NextHeaderType::udp:
-                UdpParser::decodeUntil(layer, current_parser.getPayload(), current_parser.getPayloadSize(), payload, payload_size);
+                UdpParser::decodeUntil(layer, current_parser.getPayload(), current_parser.getPayloadSize(), payload, payload_size, artefacts);
                 break;
             default:
                 throw;
                 break;
         }
     }
+}
+
+const char* Ipv6Parser::getSrcAddress() {
+    return addr_src;
+}
+
+const char* Ipv6Parser::getDstAddress() {
+    return addr_dst;
 }

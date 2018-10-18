@@ -7,6 +7,7 @@
 
 #include "../PacketParser.h"
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 class Ipv4Parser : public PacketParser {
     const static size_t MIN_HEADER_LEN = 20;
@@ -24,13 +25,17 @@ class Ipv4Parser : public PacketParser {
         u_int8_t ip_ttl; // time to live
         u_int8_t ip_p; // protocol
         u_int16_t ip_sum; // checksum
-        struct in_addr ip_src,ip_dst; // source and dest address
+        const struct in_addr ip_src,ip_dst; // source and dest address
     };
-    size_t header_length;
+    size_t header_length = 20;
     IpProto proto = other;
+    char addr_src[INET_ADDRSTRLEN];
+    char addr_dst[INET_ADDRSTRLEN];
 public:
     void parseHeader(void* packet, size_t size) override;
-    static void decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size);
+    static void decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size, Artefacts* artefacts);
+    const char* getSrcAddress();
+    const char* getDstAddress();
 };
 
 

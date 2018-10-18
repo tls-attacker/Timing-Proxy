@@ -16,6 +16,7 @@ protected:
     size_t payload_size = 0;
 
 public:
+    class Artefacts;
     enum Layer{
         ethernet,
         ipv4,
@@ -24,7 +25,7 @@ public:
         udp
     };
     virtual void parseHeader(void* packet, size_t size) = 0;
-    static void decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size);
+    static void decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size, Artefacts* artefacts);
     void* getPayload();
     size_t getPayloadSize();
 };

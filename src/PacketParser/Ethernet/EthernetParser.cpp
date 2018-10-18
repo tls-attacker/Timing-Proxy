@@ -21,7 +21,7 @@ void EthernetParser::parseHeader(void* packet, size_t size) {
     type = (EtherType)ntohs(header->ether_type);
 }
 
-void EthernetParser::decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size) {
+void EthernetParser::decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size, Artefacts* artefacts) {
     EthernetParser current_parser;
     current_parser.parseHeader(packet, size);
     if (layer == Layer::ethernet) {
@@ -30,10 +30,10 @@ void EthernetParser::decodeUntil(Layer layer, void* packet, size_t size, void** 
     }else{
         switch (current_parser.type) {
             case EtherType::ipv4:
-                Ipv4Parser::decodeUntil(layer, current_parser.getPayload(), current_parser.getPayloadSize(), payload, payload_size);
+                Ipv4Parser::decodeUntil(layer, current_parser.getPayload(), current_parser.getPayloadSize(), payload, payload_size, artefacts);
                 break;
             case EtherType::ipv6:
-                Ipv6Parser::decodeUntil(layer, current_parser.getPayload(), current_parser.getPayloadSize(), payload, payload_size);
+                Ipv6Parser::decodeUntil(layer, current_parser.getPayload(), current_parser.getPayloadSize(), payload, payload_size, artefacts);
                 break;
             default:
                 throw;

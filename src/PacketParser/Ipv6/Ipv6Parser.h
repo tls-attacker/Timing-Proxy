@@ -6,7 +6,8 @@
 #define NETWORKTIMINGTOOL_IPV6PARSER_H
 
 #include "../PacketParser.h"
-#include <linux/in6.h>
+//#include <linux/in6.h>
+#include <arpa/inet.h>
 #include <map>
 
 class Ipv6Parser : public PacketParser {
@@ -69,12 +70,14 @@ class Ipv6Parser : public PacketParser {
 
     uint8_t hop_limit = 0;
     uint8_t next_hdr;
-    const in6_addr* addr_src;
-    const in6_addr* addr_dst;
+    char addr_src[INET6_ADDRSTRLEN];
+    char addr_dst[INET6_ADDRSTRLEN];
     bool isExtensionHeader(uint8_t next_hdr);
 public:
     void parseHeader(void* packet, size_t size) override;
-    static void decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size);
+    static void decodeUntil(Layer layer, void* packet, size_t size, void** payload, size_t* payload_size, Artefacts* artefacts);
+    const char* getSrcAddress();
+    const char* getDstAddress();
 };
 
 
