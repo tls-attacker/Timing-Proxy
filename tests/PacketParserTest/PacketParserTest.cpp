@@ -2,6 +2,7 @@
 // Created by malte on 14.10.18.
 //
 #include "../../src/PacketParser/PacketParser.h"
+#include "../../src/PacketParser/Artefacts/Artefacts.h"
 #include "../../src/PacketParser/Ethernet/EthernetParser.h"
 #include "../../src/PacketParser/Ipv4/Ipv4Parser.h"
 #include "../../src/PacketParser/Ipv6/Ipv6Parser.h"
@@ -21,6 +22,7 @@ protected:
     size_t payload_size = 0;
     static constexpr size_t want_size = 28;
     char want[want_size];
+    PacketParser::Artefacts artefacts;
     virtual void SetUp() {
 
     }
@@ -40,7 +42,7 @@ TEST_F(PacketParserDecodeTest, EthernetIpv4TcpDecode) {
         "\x28\x65\x4a\x75\x73\x74\x20\x74\x65\x73\x74\x69\x6e\x67\x20\x74" \
         "\x63\x70\x20\x6f\x76\x65\x72\x20\x69\x70\x76\x34\x21\x0a";
     PacketParser::decodeUntil(PacketParser::Layer::tcp, (void*)raw_packet, sizeof(raw_packet)-1, &payload,
-                              &payload_size);
+                              &payload_size, &artefacts);
     char want[want_size] = {'J', 'u', 's', 't', ' ', 't', 'e', 's', 't', 'i', 'n', 'g',
                                   ' ', 't', 'c', 'p', ' ', 'o', 'v', 'e', 'r', ' ', 'i', 'p',
                                   'v', '4', '!', '\n'};
@@ -58,7 +60,7 @@ TEST_F(PacketParserDecodeTest, EthernetIpv6TcpDecode) {
         "\x6e\x67\x20\x74\x63\x70\x20\x6f\x76\x65\x72\x20\x69\x70\x76\x36" \
         "\x21\x0a";
     PacketParser::decodeUntil(PacketParser::Layer::tcp, (void*)raw_packet, sizeof(raw_packet)-1, &payload,
-                              &payload_size);
+                              &payload_size, &artefacts);
     char want[want_size] = {'J', 'u', 's', 't', ' ', 't', 'e', 's', 't', 'i', 'n', 'g',
                             ' ', 't', 'c', 'p', ' ', 'o', 'v', 'e', 'r', ' ', 'i', 'p',
                             'v', '6', '!', '\n'};
@@ -72,7 +74,7 @@ TEST_F(PacketParserDecodeTest, EthernetIpv4UdpDecode) {
         "\x65\x73\x74\x69\x6e\x67\x20\x75\x64\x70\x20\x6f\x76\x65\x72\x20" \
         "\x69\x70\x76\x34\x21\x0a";
     PacketParser::decodeUntil(PacketParser::Layer::udp, (void*)raw_packet, sizeof(raw_packet)-1, &payload,
-                              &payload_size);
+                              &payload_size, &artefacts);
     char want[want_size] = {'J', 'u', 's', 't', ' ', 't', 'e', 's', 't', 'i', 'n', 'g',
                             ' ', 'u', 'd', 'p', ' ', 'o', 'v', 'e', 'r', ' ', 'i', 'p',
                             'v', '4', '!', '\n'};
@@ -87,7 +89,7 @@ TEST_F(PacketParserDecodeTest, EthernetIpv6UdpDecode) {
         "\x73\x74\x20\x74\x65\x73\x74\x69\x6e\x67\x20\x75\x64\x70\x20\x6f" \
         "\x76\x65\x72\x20\x69\x70\x76\x36\x21\x0a";
     PacketParser::decodeUntil(PacketParser::Layer::udp, (void*)raw_packet, sizeof(raw_packet)-1, &payload,
-                              &payload_size);
+                              &payload_size, &artefacts);
     char want[want_size] = {'J', 'u', 's', 't', ' ', 't', 'e', 's', 't', 'i', 'n', 'g',
                             ' ', 'u', 'd', 'p', ' ', 'o', 'v', 'e', 'r', ' ', 'i', 'p',
                             'v', '6', '!', '\n'};
