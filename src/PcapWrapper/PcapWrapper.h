@@ -16,7 +16,7 @@ class PcapWrapper {
     const char* device;
     pcap_t *handle;
     PcapLoopCallback::LinkType linktype;
-    PcapLoopCallback::UserData* usrdata = new PcapLoopCallback::UserData;
+    PcapLoopCallback::UserData usrdata;
     struct bpf_program fp;
     std::thread *loop_thread = nullptr;
     void init();
@@ -28,7 +28,7 @@ public:
     void setFilter(const char* remote_host, uint16_t remote_port);
     void startLoop();
     void stopLoop();
-    uint64_t timingForPacket(const void* buf, size_t buflen);
+    uint64_t timingForPacket(const void* buf, size_t buflen, PcapLoopCallback::PacketDirection direction = PcapLoopCallback::PacketDirection::DESTINATION_REMOTE);
 };
 
 

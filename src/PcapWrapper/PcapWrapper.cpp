@@ -113,8 +113,8 @@ void PcapWrapper::init() {
             break;
     }
     linktype = (PcapLoopCallback::LinkType)pcap_datalink(handle);
-    usrdata->linktype = linktype;
-    usrdata->handle = handle;
+    usrdata.linktype = linktype;
+    usrdata.handle = handle;
     printf("Initialized device for listening\n");
 }
 
@@ -139,25 +139,31 @@ void PcapWrapper::setFilter(const char* remote_host, uint16_t remote_port){
         fprintf(stderr, "Couldn't install filter %s: %s\n", filter.c_str(), pcap_geterr(handle));
         throw;
     }
-    usrdata->remote_host = remote_host;
-    usrdata->remote_port = remote_port;
+    usrdata.remote_host = remote_host;
+    usrdata.remote_port = remote_port;
 }
 
-uint64_t PcapWrapper::timingForPacket(const void* buf, size_t buflen) {
-    return 0;
+uint64_t PcapWrapper::timingForPacket(const void* buf, size_t buflen, PcapLoopCallback::PacketDirection direction) {
+    usrdata.setWanted(buf, buflen, direction);
+    return usrdata.waitForResult();
 }
 
 void loop(PcapLoopCallback::UserData * usrdata) {
     printf("%s\n", "Starting loop!");
     pcap_loop(usrdata->handle, -1, PcapLoopCallback::handlePacket, (u_char*)usrdata);
+    printf("%s\n", "Stopping loop!");
 }
 
 void PcapWrapper::startLoop() {
-    //loop_thread = new std::thread(loop);
-    // TODO: Implement threading
-    loop(usrdata);
+    loop_thread = new std::thread(loop, &usrdata);
 }
 
 void PcapWrapper::stopLoop() {
-
+    using namespace std::chrono_literals;
+    auto thread_loop_thread_handle = loop_thread->native_handle();
+    pcap_breakloop(handle);
+    usrdata.stop_loop = true;
+    //loop_thread->join();
+    //std::this_thread::sleep_for(2s);
+    // TODO: Terminate thread after timeout if it is blocking
 }

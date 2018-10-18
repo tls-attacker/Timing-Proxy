@@ -19,7 +19,13 @@ int main() {
     PcapWrapper pc = PcapWrapper("lo");
     pc.setFilter("127.0.0.1", 8888);
     pc.startLoop();
-    char buf[10] = "test";
-    //pc.timingForPacket((void*)buf, 10);
+
+    char buf[10] = "test\n";
+    uint64_t timing = pc.timingForPacket((void*)buf, 5);
+    std::cout << "Timing for packet: " << timing << "ns" <<std::endl;
+    buf[0] = 'b';
+    timing = pc.timingForPacket((void*)buf, 5, PcapLoopCallback::PacketDirection::SOURCE_REMOTE);
+    std::cout << "Timing for packet: " << timing << "ns" <<std::endl;
+    pc.stopLoop();
     return 0;
 }

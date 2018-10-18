@@ -8,12 +8,15 @@ add_subdirectory(PacketParser)
 
 add_executable(networkTimingTool main.cpp helper/helper.h $<TARGET_OBJECTS:PcapWrapper> $<TARGET_OBJECTS:TimeSources> $<TARGET_OBJECTS:TimingSocket> $<TARGET_OBJECTS:Benchmark> $<TARGET_OBJECTS:ServerSocket> $<TARGET_OBJECTS:TimingProxy> $<TARGET_OBJECTS:PacketParser>)
 
-find_package(PCAP)
+find_package(PCAP REQUIRED)
 include_directories(${PCAP_INCLUDE_DIR})
 target_link_libraries(networkTimingTool ${PCAP_LIBRARY})
 
+FIND_PACKAGE ( Threads REQUIRED )
+TARGET_LINK_LIBRARIES (networkTimingTool ${CMAKE_THREAD_LIBS_INIT} )
+
 add_subdirectory(TestServer)
-add_subdirectory(TestClient)
+add_subdirectory(TestClientTimingSocket)
 
 #add_custom_command(
 #        TARGET networkTimingTool POST_BUILD
