@@ -40,11 +40,11 @@ void PcapLoopCallback::handlePacket(u_char *args, const struct pcap_pkthdr *head
                 PacketParser::decodeUntil(PacketParser::Layer::tcp, (void*)packet, header->len, (void**)&payload, &payload_size, &artefacts);
                 break;
             default:
-                throw;
+                throw std::invalid_argument("Link type not implemented");
                 break;
         }
-    } catch (const std::exception &exception) {
-        std::cout << "Unable to decode packet!" << std::endl;
+    } catch (const std::invalid_argument &exception) {
+        std::cerr << "Unable to decode packet!: " << exception.what() << std::endl;
         return;
     }
 
@@ -124,8 +124,9 @@ uint64_t PcapLoopCallback::UserData::waitForResult() {
     while (!found_result) {
         found_result = this->found_result;
         result_mutex.unlock();
-        if (!found_result)
-            std::this_thread::sleep_for(10ms);
+        if (!found_result) {
+            //std::this_thread::sleep_for(10ms);
+        }
         result_mutex.lock();
     }
     uint64_t timing = this->timing;
@@ -139,8 +140,9 @@ void PcapLoopCallback::UserData::waitForNewWanted() {
     while (found_result) {
         found_result = this->found_result;
         result_mutex.unlock();
-        if (found_result)
-            std::this_thread::sleep_for(10ms);
+        if (found_result) {
+            //std::this_thread::sleep_for(10ms);
+        }
         if (stop_loop) {
             return;
         }

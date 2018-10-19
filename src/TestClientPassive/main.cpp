@@ -6,13 +6,14 @@
 #include <cstring>
 #include <algorithm>
 #include "../TimingSocket/TimingSocket.h"
+#include "../PcapWrapper/PcapWrapper.h"
 
 using namespace std::chrono_literals;
 using namespace std;
 
 #define BUFSIZE 1024
 #define SAMPLESIZE 10
-#define SAMPLEREPETITIONS 100000
+#define SAMPLEREPETITIONS 10000
 
 void print_array(uint64_t values[], size_t size) {
     std::cout << "[ " <<std::endl;
@@ -59,12 +60,17 @@ int main(int argc, char const *argv[])
     uint64_t times[SAMPLESIZE][SAMPLEREPETITIONS];
     uint64_t medians[SAMPLESIZE];
     uint64_t overall_median = 0;
+    PcapWrapper pcap("lo");
+    pcap.setFilter("127.0.0.1", 1337);
+    pcap.startLoop();
     TimingSocket ts;
-    ts.connect("localhost", 1337);
+    ts.connect("127.0.0.1", 1337);
     for (size_t i = 0; i<SAMPLESIZE; i++) {
         for (size_t j=0; j<SAMPLEREPETITIONS; j++) {
-            times[i][j] = ts.writeAndTimeResponse(write_buf, BUFSIZE);
+            ts.write(write_buf, BUFSIZE);
             size_t read_size = ts.read(read_buf, BUFSIZE);
+            times[i][j] = pcap.timingForPacket(write_buf, BUFSIZE);
+            std::cout << "Measured! "<<times[i][j] << std::endl;
             if (j==0) {
                 correct_case[i] = std::string(read_buf);
             }
@@ -96,8 +102,10 @@ int main(int argc, char const *argv[])
     }
     
     cout << "The success rate is " << success_rate << "/" << SAMPLESIZE << " (" << ((double)(100*success_rate) / SAMPLESIZE) << "%)" << endl;
-    
+
+    pcap.stopLoop();
     ts.close();
+
     
 	return 0;
 }
