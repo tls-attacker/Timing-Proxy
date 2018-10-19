@@ -51,6 +51,12 @@ PCAP_API pcap_t * custom_pcap_open_live(const char *device, int snaplen, int pro
     pcap_free_tstamp_types(tstamp_types);
     
     pcap_set_tstamp_type(p, best_timestamp_type_available);
+
+    int precision = pcap_get_tstamp_precision(p);
+    if (precision == PCAP_TSTAMP_PRECISION_MICRO) {
+        // try to set nanosecond resolution
+        pcap_set_tstamp_precision(p, PCAP_TSTAMP_PRECISION_NANO);
+    }
     /* end of custom code */
     
     status = pcap_set_snaplen(p, snaplen);
@@ -62,7 +68,7 @@ PCAP_API pcap_t * custom_pcap_open_live(const char *device, int snaplen, int pro
     status = pcap_set_timeout(p, to_ms);
     if (status < 0)
         goto fail;
-    
+
     status = pcap_activate(p);
     if (status < 0)
         goto fail;
@@ -97,12 +103,8 @@ void PcapWrapper::init() {
         fprintf(stderr, "Couldn't open device %s: %s\nThis is probably a permission issue.", device, errbuf);
         throw;
     }
+
     int precision = pcap_get_tstamp_precision(handle);
-    if (precision == PCAP_TSTAMP_PRECISION_MICRO) {
-        // try to set nanosecond resolution
-        pcap_set_tstamp_precision(handle, PCAP_TSTAMP_PRECISION_NANO);
-    }
-    precision = pcap_get_tstamp_precision(handle);
     switch (precision) {
         case PCAP_TSTAMP_PRECISION_MICRO:
             printf("Using microsecond resolution\n");
