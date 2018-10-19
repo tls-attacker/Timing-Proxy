@@ -12,7 +12,9 @@ using namespace std;
 
 #define BUFSIZE 1024
 #define SAMPLESIZE 10
-#define SAMPLEREPETITIONS 10000
+#define SAMPLEREPETITIONS 10
+#define SERVER_ADDR ("169.254.71.233")
+#define SERVER_PORT (1337)
 
 void print_array(uint64_t values[], size_t size) {
     std::cout << "[ " <<std::endl;
@@ -60,11 +62,12 @@ int main(int argc, char const *argv[])
     uint64_t medians[SAMPLESIZE];
     uint64_t overall_median = 0;
     TimingSocket ts;
-    ts.connect("localhost", 1337);
+    ts.connect(SERVER_ADDR, SERVER_PORT);
     for (size_t i = 0; i<SAMPLESIZE; i++) {
         for (size_t j=0; j<SAMPLEREPETITIONS; j++) {
             times[i][j] = ts.writeAndTimeResponse(write_buf, BUFSIZE);
             size_t read_size = ts.read(read_buf, BUFSIZE);
+            std::cout << "Measured! "<<times[i][j] << std::endl;
             if (j==0) {
                 correct_case[i] = std::string(read_buf);
             }
@@ -72,7 +75,7 @@ int main(int argc, char const *argv[])
         medians[i] = median(times[i], SAMPLEREPETITIONS);
         
         // cout << "Read " << read_size << " Bytes: " << correct_case[i] << endl;
-        cout << medians[i] << ", ";
+        cout << "Median: " << medians[i] << ", " << std::endl;
         write_buf[0]++;
     }
     

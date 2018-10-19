@@ -125,7 +125,7 @@ uint64_t PcapLoopCallback::UserData::waitForResult() {
         found_result = this->found_result;
         result_mutex.unlock();
         if (!found_result) {
-            //std::this_thread::sleep_for(10ms);
+            std::this_thread::yield();
         }
         result_mutex.lock();
     }
@@ -141,7 +141,7 @@ void PcapLoopCallback::UserData::waitForNewWanted() {
         found_result = this->found_result;
         result_mutex.unlock();
         if (found_result) {
-            //std::this_thread::sleep_for(10ms);
+            std::this_thread::yield();
         }
         if (stop_loop) {
             return;
