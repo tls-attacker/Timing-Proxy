@@ -16,7 +16,8 @@ FIND_PACKAGE ( Threads REQUIRED )
 TARGET_LINK_LIBRARIES (networkTimingTool ${CMAKE_THREAD_LIBS_INIT} )
 
 add_subdirectory(TestServer)
-add_subdirectory(TestClientTimingSocket)
+add_subdirectory(TestClientActive)
+add_subdirectory(TestClientPassive)
 
 #add_custom_command(
 #        TARGET networkTimingTool POST_BUILD
