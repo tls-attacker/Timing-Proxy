@@ -58,6 +58,12 @@ PCAP_API pcap_t * custom_pcap_open_live(const char *device, int snaplen, int pro
         // try to set nanosecond resolution
         pcap_set_tstamp_precision(p, PCAP_TSTAMP_PRECISION_NANO);
     }
+
+    if(pcap_set_immediate_mode(p, 1) == 0){
+        std::cout << "Enabled immediate mode." << std::endl;
+    }else{
+        std::cerr << "Unable to set immediate moode!." << std::endl;
+    }
     /* end of custom code */
     
     status = pcap_set_snaplen(p, snaplen);
