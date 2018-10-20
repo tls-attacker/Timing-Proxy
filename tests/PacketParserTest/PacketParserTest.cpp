@@ -21,17 +21,7 @@ protected:
     void * payload = nullptr;
     size_t payload_size = 0;
     static constexpr size_t want_size = 28;
-    char want[want_size];
     PacketParser::Artefacts artefacts;
-    virtual void SetUp() {
-
-    }
-
-    virtual void TearDown() {
-        EXPECT_THAT(std::vector<char>((char*)payload, (char*)payload + payload_size),
-                    ::testing::ElementsAreArray(want));
-        EXPECT_EQ(payload_size, want_size);
-    }
 };
 
 TEST_F(PacketParserDecodeTest, EthernetIpv4TcpDecode) {
@@ -46,7 +36,9 @@ TEST_F(PacketParserDecodeTest, EthernetIpv4TcpDecode) {
     char want[want_size] = {'J', 'u', 's', 't', ' ', 't', 'e', 's', 't', 'i', 'n', 'g',
                                   ' ', 't', 'c', 'p', ' ', 'o', 'v', 'e', 'r', ' ', 'i', 'p',
                                   'v', '4', '!', '\n'};
-    memcpy(this->want, want, want_size);
+    EXPECT_THAT(std::vector<char>((char*)payload, (char*)payload + payload_size),
+                ::testing::ElementsAreArray(want));
+    EXPECT_EQ(payload_size, want_size);
 }
 
 
@@ -64,7 +56,9 @@ TEST_F(PacketParserDecodeTest, EthernetIpv6TcpDecode) {
     char want[want_size] = {'J', 'u', 's', 't', ' ', 't', 'e', 's', 't', 'i', 'n', 'g',
                             ' ', 't', 'c', 'p', ' ', 'o', 'v', 'e', 'r', ' ', 'i', 'p',
                             'v', '6', '!', '\n'};
-    memcpy(this->want, want, want_size);
+    EXPECT_THAT(std::vector<char>((char*)payload, (char*)payload + payload_size),
+                ::testing::ElementsAreArray(want));
+    EXPECT_EQ(payload_size, want_size);
 }
 
 TEST_F(PacketParserDecodeTest, EthernetIpv4UdpDecode) {
@@ -78,7 +72,9 @@ TEST_F(PacketParserDecodeTest, EthernetIpv4UdpDecode) {
     char want[want_size] = {'J', 'u', 's', 't', ' ', 't', 'e', 's', 't', 'i', 'n', 'g',
                             ' ', 'u', 'd', 'p', ' ', 'o', 'v', 'e', 'r', ' ', 'i', 'p',
                             'v', '4', '!', '\n'};
-    memcpy(this->want, want, want_size);
+    EXPECT_THAT(std::vector<char>((char*)payload, (char*)payload + payload_size),
+                ::testing::ElementsAreArray(want));
+    EXPECT_EQ(payload_size, want_size);
 }
 
 TEST_F(PacketParserDecodeTest, EthernetIpv6UdpDecode) {
@@ -93,7 +89,9 @@ TEST_F(PacketParserDecodeTest, EthernetIpv6UdpDecode) {
     char want[want_size] = {'J', 'u', 's', 't', ' ', 't', 'e', 's', 't', 'i', 'n', 'g',
                             ' ', 'u', 'd', 'p', ' ', 'o', 'v', 'e', 'r', ' ', 'i', 'p',
                             'v', '6', '!', '\n'};
-    memcpy(this->want, want, want_size);
+    EXPECT_THAT(std::vector<char>((char*)payload, (char*)payload + payload_size),
+                ::testing::ElementsAreArray(want));
+    EXPECT_EQ(payload_size, want_size);
 }
 
 class PacketParserDecodeExceptions : public ::testing::Test {
