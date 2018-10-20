@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <string>
 #include <iostream>
+#include <cstring>
 
 PCAP_API pcap_t * custom_pcap_open_live(const char *device, int snaplen, int promisc, int to_ms, char *errbuf){
     /* custom variables */
@@ -117,6 +118,7 @@ void PcapWrapper::init() {
     linktype = (PcapLoopCallback::LinkType)pcap_datalink(handle);
     usrdata.linktype = linktype;
     usrdata.handle = handle;
+    usrdata.tstamp_precision = precision;
     printf("Initialized device for listening\n");
 }
 
@@ -146,8 +148,52 @@ void PcapWrapper::setFilter(const char* remote_host, uint16_t remote_port){
 }
 
 uint64_t PcapWrapper::timingForPacket(const void* buf, size_t buflen, PcapLoopCallback::PacketDirection direction) {
-    usrdata.setWanted(buf, buflen, direction);
-    return usrdata.waitForResult();
+    bool found_second = false;
+    bool found_first = false;
+    uint64_t timing;
+    const struct timeval* first = nullptr;
+    const struct timeval* second = nullptr;
+
+    while (!found_second) {
+
+        if (usrdata.active_buffer_producer == usrdata.active_buffer_consumer && usrdata.shared_buffer_index_producer == usrdata.shared_buffer_index_consumer) {
+            // no new packets
+            std::this_thread::yield();
+            continue;
+        }
+        if (usrdata.active_buffer_producer != usrdata.active_buffer_consumer && usrdata.shared_buffer_index_consumer == PcapLoopCallback::SHARED_BUFFER_SIZE) {
+            // we are at the end of the current buffer
+            // switch to the other buffer
+            std::this_thread::yield();
+            usrdata.active_buffer_consumer = !usrdata.active_buffer_consumer;
+            usrdata.shared_buffer_index_consumer = 0;
+            continue;
+        }
+
+        PcapLoopCallback::PacketInfo* current_buffer = usrdata.active_buffer_consumer ? usrdata.shared_buffer_b : usrdata.shared_buffer_a;
+        PcapLoopCallback::PacketInfo& candidate = current_buffer[usrdata.shared_buffer_index_consumer];
+
+        if (found_first && direction != candidate.direction) {
+            found_second = true;
+            second = &candidate.timing;
+        }else{
+            /* test if we found a match */
+            if (
+                    direction == candidate.direction &&
+                    buflen    == candidate.payload_size &&
+                    memcmp(buf, candidate.payload, buflen) == 0
+                    )
+            {
+                found_first = true;
+                first = &candidate.timing;
+            }
+        }
+
+        usrdata.shared_buffer_index_consumer++;
+    }
+
+    timing = PcapLoopCallback::timevalDeltaToNs(usrdata.tstamp_precision, second, first);
+    return timing;
 }
 
 void loop(PcapLoopCallback::UserData * usrdata) {
