@@ -14,15 +14,29 @@ void CPUTimingSocket::init() {
     best_timesource = TimeSources::best_timesource(cpu_features);
 }
 
-
-uint64_t CPUTimingSocket::writeAndTimeResponse(const void *data, size_t size) {
+void CPUTimingSocket::write(const void *data, size_t size) {
     uint8_t tmp_buf;
-    uint64_t timing;
-    write(data, size);
+    TimingSocket::write(data, size);
     /*start timing*/
-    timing = best_timesource();
-    ::recv(sock, &tmp_buf, 1, MSG_PEEK);
-    /*end timing*/
-    timing = best_timesource() - timing;
-    return timing;
+    write_tstamp = best_timesource();
+    if (takeTimeOnWrite) {
+        ::recv(sock, &tmp_buf, 1, MSG_PEEK);
+        /*end timing*/
+        read_tstamp = best_timesource();
+    }
 }
+
+ssize_t CPUTimingSocket::read(void *buf, size_t size, bool blocking) {
+    auto bytes_read = TimingSocket::read(buf, size, blocking);
+    if (takeTimeOnWrite) {
+        return bytes_read;
+    }else{
+        read_tstamp = best_timesource();
+        return bytes_read;
+    }
+}
+
+uint64_t CPUTimingSocket::getLastMeasurement() {
+    return read_tstamp-write_tstamp;
+}
+

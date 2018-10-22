@@ -20,14 +20,17 @@ class KernelTimingSocket : public TimingSocket{
     };
     TSTAMP_SOURCE tstamp_source;
     void init() override;
-    struct timespec writeAndGetTimestamp(const void* data, size_t size);
-    struct timespec getRxTimestamp();
+    void getTxTimestamp(const void *data, size_t size);
+    void getRxTimestamp(const void *data, size_t size);
+    timespec tx_timestamp;
+    timespec rx_timestamp;
 
 public:
     KernelTimingSocket();
     void connect(std::string host, uint16_t port) override;
     void write(const void* data, size_t size) override;
-    uint64_t writeAndTimeResponse(const void *data, size_t size) override;
+    ssize_t read(void *buf, size_t size, bool blocking) override;
+    uint64_t getLastMeasurement() override;
 };
 
 

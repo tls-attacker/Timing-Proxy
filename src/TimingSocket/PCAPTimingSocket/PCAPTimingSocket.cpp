@@ -27,11 +27,6 @@ bool isValidIpv6Address(const char *ipAddress)
     return result != 0;
 }
 
-uint64_t PCAPTimingSocket::writeAndTimeResponse(const void *data, size_t size) {
-    write(data, size);
-    return pcap->timingForPacket(data, size);
-}
-
 void PCAPTimingSocket::connect(std::string host, uint16_t port) {
     if (!isValidIpv4Address(host.c_str()) && !isValidIpv6Address(host.c_str())){
         throw std::invalid_argument("Current pcap implementation needs an ip address in order to correlate packets.");
@@ -53,4 +48,21 @@ void PCAPTimingSocket::close() {
 void PCAPTimingSocket::initPcap(std::string device) {
     pcap = std::make_unique<PcapWrapper>(device.c_str());
     pcapInititalized = true;
+}
+
+void PCAPTimingSocket::write(const void *data, size_t size) {
+    TimingSocket::write(data, size);
+    tx_timestamp = pcap->timingForPacket(data, size, PcapLoopCallback::PacketDirection::DESTINATION_REMOTE);
+}
+
+ssize_t PCAPTimingSocket::read(void *buf, size_t size, bool blocking) {
+    ssize_t bytes_read = TimingSocket::read(buf, size, blocking);
+    if (bytes_read > 0) {
+        rx_timestamp = pcap->timingForPacket(buf, (size_t)bytes_read, PcapLoopCallback::PacketDirection::SOURCE_REMOTE);
+    }
+    return bytes_read;
+}
+
+uint64_t PCAPTimingSocket::getLastMeasurement() {
+    return PcapLoopCallback::timevalDeltaToNs(pcap->getPrecision(), &tx_timestamp, &rx_timestamp);
 }

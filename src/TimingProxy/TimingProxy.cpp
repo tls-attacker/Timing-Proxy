@@ -8,16 +8,18 @@ void TimingProxy::tryForwardInput() {
     char buf[1024];
     ssize_t size_read = proxy_input.read(buf, 1024, false);
     if (size_read > 0) {
-        std::string timing = std::to_string(proxy_output->writeAndTimeResponse(buf, size_read))+"\n";
-        control.write(timing.c_str(), timing.length());
+        proxy_output->write(buf, size_read);
     }
 }
 
 void TimingProxy::tryForwardOutput() {
     char buf[1024];
     ssize_t size_read = proxy_output->read(buf, 1024, false);
+
     if (size_read > 0) {
         proxy_input.write(buf, size_read);
+        std::string timing = std::to_string(proxy_output->getLastMeasurement())+"\n";
+        control.write(timing.c_str(), timing.length());
     }
 }
 

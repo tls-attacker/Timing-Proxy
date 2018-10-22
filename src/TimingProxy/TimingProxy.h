@@ -8,7 +8,7 @@
 class TimingProxy {
     ServerSocket proxy_input;
     ServerSocket control;
-    std::unique_ptr<TimingSocket> proxy_output = TimingSocket::createTimingSocket(TimingSocket::KindOfSocket::CPU);
+    std::unique_ptr<TimingSocket> proxy_output;
     std::string connect_host;
     int connect_port;
     std::tuple<std::string, std::string> getline(std::string prepend);
@@ -17,7 +17,7 @@ class TimingProxy {
     void tryForwardOutput();
     
 public:
-    TimingProxy(int listen_port, int control_port) {
+    TimingProxy(int listen_port, int control_port, TimingSocket::KindOfSocket measurement_technique) :  proxy_output(TimingSocket::createTimingSocket(measurement_technique)) {
         control.bind(control_port);
         proxy_input.bind(listen_port);
     };

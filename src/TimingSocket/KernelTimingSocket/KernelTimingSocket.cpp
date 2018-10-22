@@ -32,12 +32,6 @@ KernelTimingSocket::KernelTimingSocket() {
     init();
 }
 
-uint64_t KernelTimingSocket::writeAndTimeResponse(const void *data, size_t size) {
-    timespec tx_timestamp = writeAndGetTimestamp(data, size);
-    timespec rx_timestamp = getRxTimestamp();
-    return timespecDiff(rx_timestamp, tx_timestamp);
-}
-
 void KernelTimingSocket::connect(std::string host, uint16_t port) {
     TimingSocket::connect(host, port);
     /*
@@ -61,11 +55,22 @@ void KernelTimingSocket::connect(std::string host, uint16_t port) {
 }
 
 void KernelTimingSocket::write(const void *data, size_t size) {
-    writeAndGetTimestamp(data, size);
+    TimingSocket::write(data, size);
+    getTxTimestamp(data, size);
 }
 
-struct timespec KernelTimingSocket::writeAndGetTimestamp(const void *data, size_t size) {
-    TimingSocket::write(data, size);
+ssize_t KernelTimingSocket::read(void *buf, size_t size, bool blocking) {
+    ssize_t bytes_read = TimingSocket::read(buf, size, blocking);
+    if (bytes_read > 0) {
+        getRxTimestamp(buf, (size_t)bytes_read);
+    }
+}
+
+uint64_t KernelTimingSocket::getLastMeasurement() {
+    return timespecDiff(rx_timestamp, tx_timestamp);
+}
+
+void KernelTimingSocket::getTxTimestamp(const void *data, size_t size) {
     bool found_message_in_errqueue = false;
     struct timespec* ts_ptr = nullptr;
     while (!found_message_in_errqueue) {
@@ -137,10 +142,10 @@ struct timespec KernelTimingSocket::writeAndGetTimestamp(const void *data, size_
         ts_ptr = (struct timespec*) CMSG_DATA(cmsg);
         found_message_in_errqueue = true;
     }
-    return {ts_ptr[tstamp_source].tv_sec, ts_ptr[tstamp_source].tv_nsec};
+    tx_timestamp = {ts_ptr[tstamp_source].tv_sec, ts_ptr[tstamp_source].tv_nsec};
 }
 
-struct timespec KernelTimingSocket::getRxTimestamp() {
+void KernelTimingSocket::getRxTimestamp(const void *data, size_t size) {
     bool got_message = false;
     struct timespec* ts_ptr = nullptr;
     while (!got_message) {
@@ -199,9 +204,15 @@ struct timespec KernelTimingSocket::getRxTimestamp() {
             continue;
         }
 
+        if (memcmp(msg.msg_iov->iov_base, data, size) != 0) {
+            std::cout << "Did not find the required package.. Searching on"<<std::endl;
+            continue;
+        }
+
         ts_ptr = (struct timespec*) CMSG_DATA(cmsg);
         got_message = true;
     }
-    return {ts_ptr[tstamp_source].tv_sec, ts_ptr[tstamp_source].tv_nsec};
-
+    rx_timestamp = {ts_ptr[tstamp_source].tv_sec, ts_ptr[tstamp_source].tv_nsec};
 }
+
+

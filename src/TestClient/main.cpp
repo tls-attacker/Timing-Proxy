@@ -67,8 +67,9 @@ int main(int argc, char const *argv[])
     ts->connect(SERVER_ADDR, SERVER_PORT);
     for (size_t i = 0; i<SAMPLESIZE; i++) {
         for (size_t j=0; j<SAMPLEREPETITIONS; j++) {
-            times[i][j] = ts->writeAndTimeResponse(write_buf, BUFSIZE);
-            ssize_t read_size = ts->read(read_buf, BUFSIZE);
+            ts->write(write_buf, BUFSIZE);
+            ssize_t read_size = ts->read(read_buf, BUFSIZE, 1);
+            times[i][j] = ts->getLastMeasurement();
             //std::cout << "Measured! "<<times[i][j] << std::endl;
             if (j==0) {
                 correct_case[i] = std::string(read_buf);

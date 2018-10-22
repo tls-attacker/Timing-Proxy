@@ -27,9 +27,9 @@ public:
     };
     virtual void connect(std::string host, uint16_t port);
     virtual void close();
-    ssize_t read(void *buf, size_t size, bool blocking = true);
+    virtual ssize_t read(void *buf, size_t size, bool blocking);
     virtual void write(const void* data, size_t size);
-    virtual uint64_t writeAndTimeResponse(const void *data, size_t size) = 0;
+    virtual uint64_t getLastMeasurement() = 0;
 
     static std::unique_ptr<TimingSocket> createTimingSocket(KindOfSocket kind);
 };

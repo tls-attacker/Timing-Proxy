@@ -12,13 +12,17 @@ class PCAPTimingSocket : public TimingSocket {
     std::unique_ptr<PcapWrapper> pcap;
     void init() override;
     bool pcapInititalized = false;
+    struct timeval tx_timestamp;
+    struct timeval rx_timestamp;
 
 public:
     PCAPTimingSocket();
     void initPcap(std::string device);
     void connect(std::string host, uint16_t port) override;
     void close() override;
-    uint64_t writeAndTimeResponse(const void *data, size_t size) override;
+    void write(const void* data, size_t size) override;
+    ssize_t read(void *buf, size_t size, bool blocking) override;
+    uint64_t getLastMeasurement() override;
 };
 
 

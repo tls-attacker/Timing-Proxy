@@ -153,14 +153,12 @@ void PcapWrapper::setFilter(const char* remote_host, uint16_t remote_port){
     usrdata.remote_port = remote_port;
 }
 
-uint64_t PcapWrapper::timingForPacket(const void* buf, size_t buflen, PcapLoopCallback::PacketDirection direction) {
-    bool found_second = false;
+struct timeval PcapWrapper::timingForPacket(const void* buf, size_t buflen, PcapLoopCallback::PacketDirection direction) {
     bool found_first = false;
-    uint64_t timing;
-    const struct timeval* first = nullptr;
-    const struct timeval* second = nullptr;
+    const struct timeval* match = nullptr;
 
-    while (!found_second) {
+
+    while (!found_first) {
 
         if (usrdata.active_buffer_producer == usrdata.active_buffer_consumer && usrdata.shared_buffer_index_producer == usrdata.shared_buffer_index_consumer) {
             // no new packets
@@ -179,27 +177,22 @@ uint64_t PcapWrapper::timingForPacket(const void* buf, size_t buflen, PcapLoopCa
         PcapLoopCallback::PacketInfo* current_buffer = usrdata.active_buffer_consumer ? usrdata.shared_buffer_b : usrdata.shared_buffer_a;
         PcapLoopCallback::PacketInfo& candidate = current_buffer[usrdata.shared_buffer_index_consumer];
 
-        if (found_first && direction != candidate.direction) {
-            found_second = true;
-            second = &candidate.timing;
-        }else{
-            /* test if we found a match */
-            if (
-                    direction == candidate.direction &&
-                    buflen    == candidate.payload_size &&
-                    memcmp(buf, candidate.payload, buflen) == 0
-                    )
-            {
-                found_first = true;
-                first = &candidate.timing;
-            }
+
+        /* test if we found a match */
+        if (
+                direction == candidate.direction &&
+                buflen    == candidate.payload_size &&
+                memcmp(buf, candidate.payload, buflen) == 0
+                )
+        {
+            found_first = true;
+            match = &candidate.timing;
         }
 
         usrdata.shared_buffer_index_consumer++;
     }
 
-    timing = PcapLoopCallback::timevalDeltaToNs(usrdata.tstamp_precision, second, first);
-    return timing;
+    return {match->tv_sec, match->tv_usec};
 }
 
 void loop(PcapLoopCallback::UserData * usrdata) {
@@ -220,4 +213,8 @@ void PcapWrapper::stopLoop() {
     //loop_thread->join();
     //std::this_thread::sleep_for(2s);
     // TODO: Terminate thread after timeout if it is blocking
+}
+
+int PcapWrapper::getPrecision() {
+    return usrdata.tstamp_precision;
 }

@@ -12,10 +12,15 @@ class CPUTimingSocket : public TimingSocket {
     uint64_t (*best_timesource)() = nullptr;
     TimeSources::cpu_features cpu_features;
     void init() override;
+    bool takeTimeOnWrite = true;
+    uint64_t write_tstamp = 0;
+    uint64_t read_tstamp = 0;
 
 public:
     CPUTimingSocket();
-    uint64_t writeAndTimeResponse(const void *data, size_t size) override;
+    void write(const void* data, size_t size) override;
+    ssize_t read(void *buf, size_t size, bool blocking) override;
+    uint64_t getLastMeasurement() override;
 };
 
 
