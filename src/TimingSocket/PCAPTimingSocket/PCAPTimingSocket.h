@@ -9,11 +9,13 @@
 #include "../../PcapWrapper/PcapWrapper.h"
 
 class PCAPTimingSocket : public TimingSocket {
-    PcapWrapper pcap;
+    std::unique_ptr<PcapWrapper> pcap;
     void init() override;
+    bool pcapInititalized = false;
 
 public:
     PCAPTimingSocket();
+    void initPcap(std::string device);
     void connect(std::string host, uint16_t port) override;
     void close() override;
     uint64_t writeAndTimeResponse(const void *data, size_t size) override;
