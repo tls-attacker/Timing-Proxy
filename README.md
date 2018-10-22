@@ -13,4 +13,4 @@ cmake -G "Unix Makefiles" ..
 make
 ```
 
-The main binary will be placed in the `bin/src` folder.
+The main binary will be placed in the `build/src` folder.
