@@ -11,3 +11,5 @@ cmake-build-debug-*/
 cmake_install.cmake
 *.xcodeproj
 build/
+*CTestTestfile.cmake
+tests/googletest-build/
