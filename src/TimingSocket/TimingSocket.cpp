@@ -7,6 +7,9 @@
 #include <errno.h>
 #include <cstring>
 #include <stdexcept>
+#include "CPUTimingSocket/CPUTimingSocket.h"
+#include "KernelTimingSocket/KernelTimingSocket.h"
+#include "PCAPTimingSocket/PCAPTimingSocket.h"
 
 struct addrinfo* retrieveConnectionCandidates(const std::string& host, int port) {
     struct addrinfo hints, *res0;
@@ -23,12 +26,9 @@ struct addrinfo* retrieveConnectionCandidates(const std::string& host, int port)
     return res0;
 }
 
-TimingSocket::TimingSocket(){
-    cpu_features = TimeSources::get_cpu_features();
-    best_timesource = TimeSources::best_timesource(cpu_features);
-}
-
-void TimingSocket::connect(std::string host, int port) {
+void TimingSocket::connect(std::string host, uint16_t port) {
+    this->host = host;
+    this->port = port;
     struct addrinfo *res, *res0;
     res0 = retrieveConnectionCandidates(host, port);
     sock = -1;
@@ -68,18 +68,6 @@ void TimingSocket::write(const void *data, size_t size) {
     }
 }
 
-uint64_t TimingSocket::writeAndTimeResponse(const void *data, size_t size) {
-    uint8_t tmp_buf;
-    uint64_t timing;
-    write(data, size);
-    /*start timing*/
-    timing = best_timesource();
-    ::recv(sock, &tmp_buf, 1, MSG_PEEK);
-    /*end timing*/
-    timing = best_timesource() - timing;
-    return timing;
-}
-
 ssize_t TimingSocket::read(void *buf, size_t size, bool blocking) {
     int flags = 0;
     if (!blocking) {
@@ -98,4 +86,17 @@ ssize_t TimingSocket::read(void *buf, size_t size, bool blocking) {
 void TimingSocket::close() {
     ::close(sock);
     state = SOCKSTATE_CLOSED;
+}
+
+std::unique_ptr<TimingSocket> TimingSocket::createTimingSocket(KindOfSocket kind){
+    switch (kind) {
+        case CPU:
+            return std::make_unique<CPUTimingSocket>();
+        case Kernel:
+            return std::make_unique<KernelTimingSocket>();
+        case PCAP:
+            return std::make_unique<PCAPTimingSocket>();
+        default:
+            throw;
+    }
 }

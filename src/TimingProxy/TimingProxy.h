@@ -8,7 +8,7 @@
 class TimingProxy {
     ServerSocket proxy_input;
     ServerSocket control;
-    TimingSocket proxy_output;
+    std::unique_ptr<TimingSocket> proxy_output = TimingSocket::createTimingSocket(TimingSocket::KindOfSocket::CPU);
     std::string connect_host;
     int connect_port;
     std::tuple<std::string, std::string> getline(std::string prepend);

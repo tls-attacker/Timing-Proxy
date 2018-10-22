@@ -1,1 +1,1 @@
-add_library(TimingSocket OBJECT TimingSocket.cpp TimingSocket.h)
+add_library(TimingSocket OBJECT TimingSocket.cpp TimingSocket.h CPUTimingSocket/CPUTimingSocket.cpp CPUTimingSocket/CPUTimingSocket.h PCAPTimingSocket/PCAPTimingSocket.cpp PCAPTimingSocket/PCAPTimingSocket.h KernelTimingSocket/KernelTimingSocket.cpp KernelTimingSocket/KernelTimingSocket.h)

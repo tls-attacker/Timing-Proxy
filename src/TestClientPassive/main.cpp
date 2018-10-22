@@ -12,8 +12,8 @@ using namespace std::chrono_literals;
 using namespace std;
 
 #define BUFSIZE 1024
-#define SAMPLESIZE 10
-#define SAMPLEREPETITIONS 10
+#define SAMPLESIZE 400
+#define SAMPLEREPETITIONS 200
 #define SERVER_ADDR ("169.254.71.233")
 #define SERVER_PORT (1337)
 
@@ -37,7 +37,7 @@ uint64_t median(uint64_t values[], size_t size) {
     //print_array(values, size);
     // Sort the values
     sort(values_sorted, values_sorted+size);
-    //print_array(values, size);
+    //print_array(values_sorted, size);
     // Pick the middle value
     uint64_t med;
     if ((size % 2) != 0) {
@@ -65,14 +65,14 @@ int main(int argc, char const *argv[])
     PcapWrapper pcap("enp2s0");
     pcap.setFilter(SERVER_ADDR, SERVER_PORT);
     pcap.startLoop();
-    TimingSocket ts;
-    ts.connect(SERVER_ADDR, SERVER_PORT);
+    std::unique_ptr<TimingSocket> ts = TimingSocket::createTimingSocket(TimingSocket::KindOfSocket::PCAP);
+    ts->connect(SERVER_ADDR, SERVER_PORT);
     for (size_t i = 0; i<SAMPLESIZE; i++) {
         for (size_t j=0; j<SAMPLEREPETITIONS; j++) {
-            ts.write(write_buf, BUFSIZE);
-            size_t read_size = ts.read(read_buf, BUFSIZE);
+            ts->write(write_buf, BUFSIZE);
+            ssize_t read_size = ts->read(read_buf, BUFSIZE);
             times[i][j] = pcap.timingForPacket(write_buf, BUFSIZE);
-            std::cout << "Measured! "<<times[i][j] << std::endl;
+            //std::cout << "Measured! "<<times[i][j] << std::endl;
             if (j==0) {
                 correct_case[i] = std::string(read_buf);
             }
@@ -106,7 +106,7 @@ int main(int argc, char const *argv[])
     cout << "The success rate is " << success_rate << "/" << SAMPLESIZE << " (" << ((double)(100*success_rate) / SAMPLESIZE) << "%)" << endl;
 
     pcap.stopLoop();
-    ts.close();
+    ts->close();
 
     
 	return 0;
