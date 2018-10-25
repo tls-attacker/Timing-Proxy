@@ -27,6 +27,7 @@ class KernelTimingSocket : public TimingSocket{
 
 public:
     KernelTimingSocket();
+    ~KernelTimingSocket() override = default;
     void connect(std::string host, uint16_t port) override;
     void write(const void* data, size_t size) override;
     ssize_t read(void *buf, size_t size, bool blocking) override;

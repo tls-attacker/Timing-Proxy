@@ -17,6 +17,7 @@ class PCAPTimingSocket : public TimingSocket {
 
 public:
     PCAPTimingSocket();
+    ~PCAPTimingSocket() override = default;
     void initPcap(std::string device);
     void connect(std::string host, uint16_t port) override;
     void close() override;

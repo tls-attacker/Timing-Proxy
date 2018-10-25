@@ -25,6 +25,7 @@ public:
         Kernel,
         PCAP
     };
+    virtual ~TimingSocket() = default;
     virtual void connect(std::string host, uint16_t port);
     virtual void close();
     virtual ssize_t read(void *buf, size_t size, bool blocking);

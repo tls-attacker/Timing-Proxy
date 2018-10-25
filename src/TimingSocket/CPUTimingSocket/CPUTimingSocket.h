@@ -18,6 +18,7 @@ class CPUTimingSocket : public TimingSocket {
 
 public:
     CPUTimingSocket();
+    ~CPUTimingSocket() override = default;
     void write(const void* data, size_t size) override;
     ssize_t read(void *buf, size_t size, bool blocking) override;
     uint64_t getLastMeasurement() override;
