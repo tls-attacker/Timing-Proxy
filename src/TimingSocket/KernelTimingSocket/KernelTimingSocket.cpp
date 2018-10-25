@@ -64,6 +64,7 @@ ssize_t KernelTimingSocket::read(void *buf, size_t size, bool blocking) {
     if (bytes_read > 0) {
         getRxTimestamp(buf, (size_t)bytes_read);
     }
+    return bytes_read;
 }
 
 uint64_t KernelTimingSocket::getLastMeasurement() {
