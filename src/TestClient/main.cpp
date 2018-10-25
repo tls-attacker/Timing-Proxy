@@ -6,6 +6,7 @@
 #include <cstring>
 #include <algorithm>
 #include "../TimingSocket/TimingSocket.h"
+#include "../TimingSocket/PCAPTimingSocket/PCAPTimingSocket.h"
 #include "../PcapWrapper/PcapWrapper.h"
 
 using namespace std::chrono_literals;
@@ -14,9 +15,10 @@ using namespace std;
 #define BUFSIZE 1024
 #define SAMPLESIZE 400
 #define SAMPLEREPETITIONS 200
-#define SERVER_ADDR ("169.254.71.233")
+#define SERVER_ADDR ("127.0.0.1")
 #define SERVER_PORT (1337)
 #define MEASUREMENT_TECHNIQUE (TimingSocket::KindOfSocket::PCAP)
+#define PCAP_INTERFACE ("lo")
 
 void print_array(uint64_t values[], size_t size) {
     std::cout << "[ " <<std::endl;
@@ -64,11 +66,14 @@ int main(int argc, char const *argv[])
     uint64_t medians[SAMPLESIZE];
     uint64_t overall_median = 0;
     std::unique_ptr<TimingSocket> ts = TimingSocket::createTimingSocket(MEASUREMENT_TECHNIQUE);
+    if (MEASUREMENT_TECHNIQUE == TimingSocket::KindOfSocket::PCAP) {
+        dynamic_cast<PCAPTimingSocket*>(ts.get())->initPcap(PCAP_INTERFACE);
+    }
     ts->connect(SERVER_ADDR, SERVER_PORT);
     for (size_t i = 0; i<SAMPLESIZE; i++) {
         for (size_t j=0; j<SAMPLEREPETITIONS; j++) {
             ts->write(write_buf, BUFSIZE);
-            ssize_t read_size = ts->read(read_buf, BUFSIZE, 1);
+            ssize_t read_size = ts->read(read_buf, BUFSIZE, true);
             times[i][j] = ts->getLastMeasurement();
             //std::cout << "Measured! "<<times[i][j] << std::endl;
             if (j==0) {
@@ -87,7 +92,7 @@ int main(int argc, char const *argv[])
 
     for (size_t i = 0; i<SAMPLESIZE; i++) {
         std::string guessed_case;
-        if (medians[i] <= overall_median) {
+        if (medians[i] >= overall_median) {
             guessed_case = "a";
         }else{
             guessed_case = "b";
