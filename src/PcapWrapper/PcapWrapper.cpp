@@ -50,8 +50,12 @@ PCAP_API pcap_t * custom_pcap_open_live(const char *device, int snaplen, int pro
     }
     
     pcap_free_tstamp_types(tstamp_types);
-    
-    pcap_set_tstamp_type(p, best_timestamp_type_available);
+    if (n_tstamp_types > 0){
+        int err = pcap_set_tstamp_type(p, best_timestamp_type_available);
+        if (err) {
+            fprintf(stderr, "Error when setting tstamp_type %d\n", best_timestamp_type_available);
+        }
+    }
 
     int precision = pcap_get_tstamp_precision(p);
     if (precision == PCAP_TSTAMP_PRECISION_MICRO) {
