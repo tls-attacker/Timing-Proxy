@@ -1,4 +1,6 @@
 #include "TimingProxy.h"
+#include "../TimingSocket/PCAPTimingSocket/PCAPTimingSocket.h"
+#include "../TimingSocket/KernelTimingSocket/KernelTimingSocket.h"
 #include <vector>
 #include <iostream>
 #include <sstream>
@@ -63,4 +65,14 @@ void TimingProxy::getProxyTarget() {
     result = getline(std::get<1>(result));
     connect_port = std::stoi(std::get<0>(result));
     std::cout << connect_port << "\n";
+}
+
+void TimingProxy::setInterface(std::string interface) {
+    if (measurement_technique == TimingSocket::KindOfSocket::Kernel) {
+        dynamic_cast<KernelTimingSocket*>(proxy_output.get())->enableHardwareTimestampingForDevice(std::move(interface));
+    }else if(measurement_technique == TimingSocket::KindOfSocket::PCAP) {
+        dynamic_cast<PCAPTimingSocket*>(proxy_output.get())->initPcap(std::move(interface));
+    }else{
+        throw;
+    }
 }

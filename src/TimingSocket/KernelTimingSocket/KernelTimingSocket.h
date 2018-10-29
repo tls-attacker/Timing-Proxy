@@ -9,6 +9,8 @@
 #include <sys/socket.h>
 #include <linux/net_tstamp.h>
 #include <linux/sockios.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
 
 static const uint32_t SO_TIMESTAMPING_OPTIONS_HARDWARE = SOF_TIMESTAMPING_RX_HARDWARE | SOF_TIMESTAMPING_TX_HARDWARE | SOF_TIMESTAMPING_RAW_HARDWARE;
 static const uint32_t SO_TIMESTAMPING_OPTIONS_SOFTWARE = SOF_TIMESTAMPING_RX_SOFTWARE | SOF_TIMESTAMPING_TX_SOFTWARE | SOF_TIMESTAMPING_SOFTWARE;
@@ -19,6 +21,8 @@ class KernelTimingSocket : public TimingSocket{
         HARDWARE = 2,
     };
     TSTAMP_SOURCE tstamp_source;
+    hwtstamp_config config;
+    ifreq interface_request;
     void init() override;
     void getTxTimestamp(const void *data, size_t size);
     void getRxTimestamp(const void *data, size_t size);
@@ -32,6 +36,7 @@ public:
     void write(const void* data, size_t size) override;
     ssize_t read(void *buf, size_t size, bool blocking) override;
     uint64_t getLastMeasurement() override;
+    void enableHardwareTimestampingForDevice(std::string device);
 };
 
 

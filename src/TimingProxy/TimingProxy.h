@@ -15,13 +15,16 @@ class TimingProxy {
     void getProxyTarget();
     void tryForwardInput();
     void tryForwardOutput();
+    TimingSocket::KindOfSocket measurement_technique;
     
 public:
     TimingProxy(int listen_port, int control_port, TimingSocket::KindOfSocket measurement_technique) :  proxy_output(TimingSocket::createTimingSocket(measurement_technique)) {
         control.bind(control_port);
         proxy_input.bind(listen_port);
+        this->measurement_technique = measurement_technique;
     };
     void run();
+    void setInterface(std::string interface);
 };
 
 #endif // TimingProxy_h

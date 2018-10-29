@@ -53,16 +53,20 @@ void PCAPTimingSocket::initPcap(std::string device) {
 void PCAPTimingSocket::write(const void *data, size_t size) {
     TimingSocket::write(data, size);
     tx_timestamp = pcap->timingForPacket(data, size, PcapLoopCallback::PacketDirection::DESTINATION_REMOTE);
+    std::cout << "tx_timestamp: "<<tx_timestamp.tv_sec<<" "<<tx_timestamp.tv_usec<<std::endl;
 }
 
 ssize_t PCAPTimingSocket::read(void *buf, size_t size, bool blocking) {
     ssize_t bytes_read = TimingSocket::read(buf, size, blocking);
     if (bytes_read > 0) {
         rx_timestamp = pcap->timingForPacket(buf, (size_t)bytes_read, PcapLoopCallback::PacketDirection::SOURCE_REMOTE);
+        std::cout << "rx_timestamp: "<<rx_timestamp.tv_sec<<" "<<rx_timestamp.tv_usec<<std::endl;
     }
     return bytes_read;
 }
 
 uint64_t PCAPTimingSocket::getLastMeasurement() {
-    return PcapLoopCallback::timevalDeltaToNs(pcap->getPrecision(), &tx_timestamp, &rx_timestamp);
+    uint64_t delta = PcapLoopCallback::timevalDeltaToNs(pcap->getPrecision(), &tx_timestamp, &rx_timestamp);
+    std::cout << "delta: "<<delta<<std::endl;
+    return delta;
 }

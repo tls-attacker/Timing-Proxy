@@ -25,7 +25,8 @@ uint64_t timespecDiff(struct timespec after, struct timespec before) {
 }
 
 void KernelTimingSocket::init() {
-
+    bzero(&config, sizeof(hwtstamp_config));
+    bzero(&interface_request, sizeof(ifreq));
 }
 
 KernelTimingSocket::KernelTimingSocket() {
@@ -33,15 +34,29 @@ KernelTimingSocket::KernelTimingSocket() {
 }
 
 void KernelTimingSocket::connect(std::string host, uint16_t port) {
+    if (host == "127.0.0.1" || host == "::1") {
+        std::cerr << "Using kernel timestamping on localhost might not work"<<std::endl;
+    }
     TimingSocket::connect(host, port);
+
+    /* enable hardware timestamping in the kernel driver */
+    int ioctl_err = ioctl(sock, SIOCSHWTSTAMP, &interface_request);
+    if (ioctl_err == ERANGE || ioctl_err == EINVAL) {
+        std::cerr << "Timestamping cannot be enabled for the device "<<interface_request.ifr_name<<std::endl;
+        throw;
+    }else if (ioctl_err) {
+        std::cerr << "Timestamping cannot be enabled due to an unknown reason. Maybe the process does not have the right permission."<<std::endl;
+        throw;
+    }
+
     /*
      * Try to set hardware timestamping first
      * If that fails, fall back to software timestamping
      * */
-    int err = setsockopt(sock, SOL_SOCKET, SO_TIMESTAMPING, &SO_TIMESTAMPING_OPTIONS_HARDWARE, sizeof(int));
-    if (err) {
-        err = setsockopt(sock, SOL_SOCKET, SO_TIMESTAMPING, &SO_TIMESTAMPING_OPTIONS_SOFTWARE, sizeof(int));
-        if (err) {
+    int setsockopt_err = setsockopt(sock, SOL_SOCKET, SO_TIMESTAMPING, &SO_TIMESTAMPING_OPTIONS_HARDWARE, sizeof(int));
+    if (setsockopt_err) {
+        setsockopt_err = setsockopt(sock, SOL_SOCKET, SO_TIMESTAMPING, &SO_TIMESTAMPING_OPTIONS_SOFTWARE, sizeof(int));
+        if (setsockopt_err) {
             throw std::runtime_error("Unable to enable timestamping on the socket");
         }else{
             std::cout << "Using software timestamps on the socket." << std::endl;
@@ -216,4 +231,11 @@ void KernelTimingSocket::getRxTimestamp(const void *data, size_t size) {
     rx_timestamp = {ts_ptr[tstamp_source].tv_sec, ts_ptr[tstamp_source].tv_nsec};
 }
 
-
+void KernelTimingSocket::enableHardwareTimestampingForDevice(std::string device) {
+    bzero(&config, sizeof(config));
+    config.tx_type = HWTSTAMP_TX_ON;
+    config.rx_filter = HWTSTAMP_FILTER_ALL;
+    bzero(&interface_request, sizeof(interface_request));
+    strncpy(interface_request.ifr_name, device.c_str(), IFNAMSIZ);
+    interface_request.ifr_data = (char*)&interface_request;
+}

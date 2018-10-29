@@ -47,6 +47,7 @@ int main(int argc, char const *argv[])
                 chosen_write_buf = write_buf_b;
             }
             helper::active_sleep(sleep_duration_ns);
+            //helper::passive_sleep(sleep_duration_ns);
             ss.write(chosen_write_buf, BUFSIZE);
             std::cout <<chosen_write_buf[0]<<"slept for "<<sleep_duration_ns<<"ns\n";
             //std::this_thread::yield();

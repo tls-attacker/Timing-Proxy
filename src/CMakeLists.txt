@@ -15,6 +15,9 @@ target_link_libraries(networkTimingTool ${PCAP_LIBRARY})
 FIND_PACKAGE ( Threads REQUIRED )
 TARGET_LINK_LIBRARIES (networkTimingTool ${CMAKE_THREAD_LIBS_INIT} )
 
+find_package(Boost 1.65 COMPONENTS program_options REQUIRED)
+target_link_libraries(networkTimingTool Boost::program_options)
+
 add_subdirectory(TestServer)
 add_subdirectory(TestClient)
 
