@@ -4,7 +4,7 @@
 #include <cpuid.h>
 #include <ctime>
 //#include <Kernel/i386/cpuid.h>
-#include "TimingSocket/TimingSocket.h"
+#include "Socket/ClientSocket/TimingSocket/TimingSocket.h"
 #include "TimingProxy/TimingProxy.h"
 #include <boost/program_options.hpp>
 
@@ -13,7 +13,7 @@ namespace po = boost::program_options;
 
 int main(int argc, const char** argv) {
     uint16_t dataPort, control_port;
-    TimingSocket::KindOfSocket measurement_technique;
+    Socket::TimingSocket::KindOfSocket measurement_technique;
     std::string interface;
     std::string technique;
     po::options_description desc("Allowed options");
@@ -33,11 +33,11 @@ int main(int argc, const char** argv) {
     }
 
     if (technique == "CPU") {
-        measurement_technique = TimingSocket::KindOfSocket::CPU;
+        measurement_technique = Socket::TimingSocket::KindOfSocket::CPU;
     }else if(technique == "Kernel"){
-        measurement_technique = TimingSocket::KindOfSocket::Kernel;
+        measurement_technique = Socket::TimingSocket::KindOfSocket::Kernel;
     }else if(technique == "PCAP") {
-        measurement_technique = TimingSocket::KindOfSocket::PCAP;
+        measurement_technique = Socket::TimingSocket::KindOfSocket::PCAP;
     }else{
         std::cout << "Invalid measurement technique. See \"-h\" for help." << std::endl;
         return -1;

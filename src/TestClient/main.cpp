@@ -5,8 +5,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
-#include "../TimingSocket/TimingSocket.h"
-#include "../TimingSocket/PCAPTimingSocket/PCAPTimingSocket.h"
+#include "../Socket/ClientSocket/TimingSocket/TimingSocket.h"
+#include "../Socket/ClientSocket/TimingSocket/PCAPTimingSocket/PCAPTimingSocket.h"
 #include "../PcapWrapper/PcapWrapper.h"
 
 using namespace std::chrono_literals;
@@ -17,7 +17,7 @@ using namespace std;
 #define SAMPLEREPETITIONS 200
 #define SERVER_ADDR ("127.0.0.1")
 #define SERVER_PORT (1337)
-#define MEASUREMENT_TECHNIQUE (TimingSocket::KindOfSocket::PCAP)
+#define MEASUREMENT_TECHNIQUE (Socket::TimingSocket::KindOfSocket::CPU)
 #define PCAP_INTERFACE ("lo")
 
 void print_array(uint64_t values[], size_t size) {
@@ -65,9 +65,9 @@ int main(int argc, char const *argv[])
     uint64_t times[SAMPLESIZE][SAMPLEREPETITIONS];
     uint64_t medians[SAMPLESIZE];
     uint64_t overall_median = 0;
-    std::unique_ptr<TimingSocket> ts = TimingSocket::createTimingSocket(MEASUREMENT_TECHNIQUE);
-    if (MEASUREMENT_TECHNIQUE == TimingSocket::KindOfSocket::PCAP) {
-        dynamic_cast<PCAPTimingSocket*>(ts.get())->initPcap(PCAP_INTERFACE);
+    std::unique_ptr<Socket::TimingSocket> ts = Socket::TimingSocket::createTimingSocket(MEASUREMENT_TECHNIQUE);
+    if (MEASUREMENT_TECHNIQUE == Socket::TimingSocket::KindOfSocket::PCAP) {
+        dynamic_cast<Socket::PCAPTimingSocket*>(ts.get())->initPcap(PCAP_INTERFACE);
     }
     ts->connect(SERVER_ADDR, SERVER_PORT);
     for (size_t i = 0; i<SAMPLESIZE; i++) {

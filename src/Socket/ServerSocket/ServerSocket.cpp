@@ -5,18 +5,15 @@
 #include <strings.h>
 #include <cstring>
 
-ServerSocket::ServerSocket() {
-    
-}
 
-ServerSocket::~ServerSocket() {
+Socket::ServerSocket::~ServerSocket() {
     if (has_client) {
         close_client();
     }
     close();
 }
 
-void ServerSocket::bind(int port) {
+void Socket::ServerSocket::bind(int port) {
     this->port = port;
     struct sockaddr_in6 serv_addr;
     bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -33,19 +30,24 @@ void ServerSocket::bind(int port) {
         throw std::runtime_error(std::string("ServerSocket: Can't listen on ipv4 and ipv6. Reason: ")+std::string(strerror(errno)));
     }
 
+    int enable=1;
+    if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable))){
+        throw std::runtime_error(std::string("ServerSocket: Can't set SO_REUSEADDR. Reason: ")+std::string(strerror(errno)));
+    }
+
     if (::bind(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
         throw std::runtime_error(std::string("ServerSocket: Unable to bind socket. Reason: ")+std::string(strerror(errno)));
     }
 }
 
-void ServerSocket::listen() {
+void Socket::ServerSocket::listen() {
     int ret = ::listen(sock, 1);
     if (ret != 0) {
         throw std::runtime_error(std::string("ServerSocket: Unable to listen on socket. Reason: ")+std::string(strerror(errno)));
     }
 }
 
-void ServerSocket::accept() {
+void Socket::ServerSocket::accept() {
    client_sock = ::accept(sock, (struct sockaddr*)&client_addr, &client_addr_len);
     if (client_sock < 0) {
        throw std::runtime_error(std::string("ServerSocket: Unable to accept client socket. Reason: ")+std::string(strerror(errno)));
@@ -53,16 +55,16 @@ void ServerSocket::accept() {
     has_client = true;
 }
 
-void ServerSocket::close_client() {
+void Socket::ServerSocket::close_client() {
     ::close(client_sock);
     has_client = false;
 }
 
-void ServerSocket::close() {
+void Socket::ServerSocket::close() {
     ::close(sock);
 }
 
-ssize_t ServerSocket::read(void* buf, size_t size, bool blocking) {
+ssize_t Socket::ServerSocket::read(void* buf, size_t size, bool blocking) {
     int flags = 0;
     if (!blocking) {
         flags |= MSG_DONTWAIT;
@@ -74,7 +76,7 @@ ssize_t ServerSocket::read(void* buf, size_t size, bool blocking) {
     return size_recieved;
 }
 
-ssize_t ServerSocket::write(const void *data, size_t size) {
+ssize_t Socket::ServerSocket::write(const void *data, size_t size) {
     ssize_t return_val = ::send(client_sock, data, size, 0);
     if (return_val < 0) {
         throw std::runtime_error(std::string("Unable to send data. Reason: ")+std::string(strerror(errno)));

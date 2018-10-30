@@ -1,10 +1,12 @@
 #include "TimingProxy.h"
-#include "../TimingSocket/PCAPTimingSocket/PCAPTimingSocket.h"
-#include "../TimingSocket/KernelTimingSocket/KernelTimingSocket.h"
+#include "../Socket/ClientSocket/TimingSocket/PCAPTimingSocket/PCAPTimingSocket.h"
+#include "../Socket/ClientSocket/TimingSocket/KernelTimingSocket/KernelTimingSocket.h"
 #include <vector>
 #include <iostream>
 #include <sstream>
 #include <tuple>
+#include <boost/endian/conversion.hpp>
+
 
 void TimingProxy::tryForwardInput() {
     char buf[1024];
@@ -20,8 +22,11 @@ void TimingProxy::tryForwardOutput() {
 
     if (size_read > 0) {
         proxy_input.write(buf, size_read);
-        std::string timing = std::to_string(proxy_output->getLastMeasurement())+"\n";
-        control.write(timing.c_str(), timing.length());
+
+        //std::string timing = std::to_string(proxy_output->getLastMeasurement())+"\n";
+        //control.write(timing.c_str(), timing.length());
+        uint64_t network_byte_order_tstamp = boost::endian::native_to_big(proxy_output->getLastMeasurement());
+        control.write(&network_byte_order_tstamp, sizeof(uint64_t));
     }
 }
 
@@ -32,7 +37,9 @@ void TimingProxy::run() {
     proxy_input.accept();
     getProxyTarget();
     proxy_output->connect(connect_host, connect_port);
+
     while (true) {
+        std::cout << "Still alive!" << std::endl;
         tryForwardInput();
         tryForwardOutput();
     }
@@ -68,11 +75,9 @@ void TimingProxy::getProxyTarget() {
 }
 
 void TimingProxy::setInterface(std::string interface) {
-    if (measurement_technique == TimingSocket::KindOfSocket::Kernel) {
-        dynamic_cast<KernelTimingSocket*>(proxy_output.get())->enableHardwareTimestampingForDevice(std::move(interface));
-    }else if(measurement_technique == TimingSocket::KindOfSocket::PCAP) {
-        dynamic_cast<PCAPTimingSocket*>(proxy_output.get())->initPcap(std::move(interface));
-    }else{
-        throw;
+    if (measurement_technique == Socket::TimingSocket::KindOfSocket::Kernel) {
+        dynamic_cast<Socket::KernelTimingSocket*>(proxy_output.get())->enableHardwareTimestampingForDevice(interface);
+    }else if(measurement_technique == Socket::TimingSocket::KindOfSocket::PCAP) {
+        dynamic_cast<Socket::PCAPTimingSocket*>(proxy_output.get())->initPcap(interface);
     }
 }

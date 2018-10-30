@@ -6,16 +6,16 @@
 #include <iostream>
 #include "CPUTimingSocket.h"
 
-CPUTimingSocket::CPUTimingSocket() {
+Socket::CPUTimingSocket::CPUTimingSocket() {
     init();
 }
 
-void CPUTimingSocket::init() {
+void Socket::CPUTimingSocket::init() {
     cpu_features = TimeSources::get_cpu_features();
     best_timesource = TimeSources::best_timesource(cpu_features);
 }
 
-void CPUTimingSocket::write(const void *data, size_t size) {
+void Socket::CPUTimingSocket::write(const void *data, size_t size) {
     uint8_t tmp_buf;
     TimingSocket::write(data, size);
     /*start timing*/
@@ -31,7 +31,7 @@ void CPUTimingSocket::write(const void *data, size_t size) {
     }
 }
 
-ssize_t CPUTimingSocket::read(void *buf, size_t size, bool blocking) {
+ssize_t Socket::CPUTimingSocket::read(void *buf, size_t size, bool blocking) {
     auto bytes_read = TimingSocket::read(buf, size, blocking);
     if (takeTimeOnWrite) {
         return bytes_read;
@@ -42,7 +42,7 @@ ssize_t CPUTimingSocket::read(void *buf, size_t size, bool blocking) {
     }
 }
 
-uint64_t CPUTimingSocket::getLastMeasurement() {
+uint64_t Socket::CPUTimingSocket::getLastMeasurement() {
     std::cout << "diff: "<<read_tstamp-write_tstamp<<std::endl;
     return read_tstamp-write_tstamp;
 }

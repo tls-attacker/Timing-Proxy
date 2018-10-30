@@ -26,7 +26,7 @@ struct addrinfo* retrieveConnectionCandidates(const std::string& host, int port)
     return res0;
 }
 
-void TimingSocket::connect(std::string host, uint16_t port) {
+void Socket::TimingSocket::connect(std::string host, uint16_t port) {
     this->host = host;
     this->port = port;
     struct addrinfo *res, *res0;
@@ -55,7 +55,7 @@ void TimingSocket::connect(std::string host, uint16_t port) {
     freeaddrinfo(res0);
 }
 
-void TimingSocket::write(const void *data, size_t size) {
+void Socket::TimingSocket::write(const void *data, size_t size) {
     if (state != SOCKSTATE_ESTABLISHED) {
         throw std::runtime_error(std::string("Socket is not ready for sending"));
     }
@@ -68,7 +68,7 @@ void TimingSocket::write(const void *data, size_t size) {
     }
 }
 
-ssize_t TimingSocket::read(void *buf, size_t size, bool blocking) {
+ssize_t Socket::TimingSocket::read(void *buf, size_t size, bool blocking) {
     int flags = 0;
     if (!blocking) {
         flags |= MSG_DONTWAIT;
@@ -83,12 +83,12 @@ ssize_t TimingSocket::read(void *buf, size_t size, bool blocking) {
     return size_recieved;
 }
 
-void TimingSocket::close() {
+void Socket::TimingSocket::close() {
     ::close(sock);
     state = SOCKSTATE_CLOSED;
 }
 
-std::unique_ptr<TimingSocket> TimingSocket::createTimingSocket(KindOfSocket kind){
+std::unique_ptr<Socket::TimingSocket> Socket::TimingSocket::createTimingSocket(KindOfSocket kind){
     switch (kind) {
         case CPU:
             return std::make_unique<CPUTimingSocket>();

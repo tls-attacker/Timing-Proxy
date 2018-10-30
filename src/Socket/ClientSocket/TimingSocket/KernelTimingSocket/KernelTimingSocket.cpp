@@ -8,8 +8,8 @@
 #include <strings.h>
 #include <cstring>
 #include <sys/socket.h>
-#include "../../PacketParser/PacketParser.h"
-#include "../../PacketParser/Artefacts/Artefacts.h"
+#include "../../../../PacketParser/PacketParser.h"
+#include "../../../../PacketParser/Artefacts/Artefacts.h"
 
 uint64_t timespecDiff(struct timespec after, struct timespec before) {
     if (after.tv_sec < before.tv_sec || (after.tv_sec == before.tv_sec && after.tv_nsec < before.tv_nsec)) {
@@ -24,16 +24,16 @@ uint64_t timespecDiff(struct timespec after, struct timespec before) {
     return (secDiff*1000000000) + (after.tv_nsec - before.tv_nsec);
 }
 
-void KernelTimingSocket::init() {
+void Socket::KernelTimingSocket::init() {
     bzero(&config, sizeof(hwtstamp_config));
     bzero(&interface_request, sizeof(ifreq));
 }
 
-KernelTimingSocket::KernelTimingSocket() {
+Socket::KernelTimingSocket::KernelTimingSocket() {
     init();
 }
 
-void KernelTimingSocket::connect(std::string host, uint16_t port) {
+void Socket::KernelTimingSocket::connect(std::string host, uint16_t port) {
     if (host == "127.0.0.1" || host == "::1") {
         std::cerr << "Using kernel timestamping on localhost might not work"<<std::endl;
     }
@@ -69,12 +69,12 @@ void KernelTimingSocket::connect(std::string host, uint16_t port) {
 
 }
 
-void KernelTimingSocket::write(const void *data, size_t size) {
+void Socket::KernelTimingSocket::write(const void *data, size_t size) {
     TimingSocket::write(data, size);
     getTxTimestamp(data, size);
 }
 
-ssize_t KernelTimingSocket::read(void *buf, size_t size, bool blocking) {
+ssize_t Socket::KernelTimingSocket::read(void *buf, size_t size, bool blocking) {
     ssize_t bytes_read = TimingSocket::read(buf, size, blocking);
     if (bytes_read > 0) {
         getRxTimestamp(buf, (size_t)bytes_read);
@@ -82,11 +82,11 @@ ssize_t KernelTimingSocket::read(void *buf, size_t size, bool blocking) {
     return bytes_read;
 }
 
-uint64_t KernelTimingSocket::getLastMeasurement() {
+uint64_t Socket::KernelTimingSocket::getLastMeasurement() {
     return timespecDiff(rx_timestamp, tx_timestamp);
 }
 
-void KernelTimingSocket::getTxTimestamp(const void *data, size_t size) {
+void Socket::KernelTimingSocket::getTxTimestamp(const void *data, size_t size) {
     bool found_message_in_errqueue = false;
     struct timespec* ts_ptr = nullptr;
     while (!found_message_in_errqueue) {
@@ -161,7 +161,7 @@ void KernelTimingSocket::getTxTimestamp(const void *data, size_t size) {
     tx_timestamp = {ts_ptr[tstamp_source].tv_sec, ts_ptr[tstamp_source].tv_nsec};
 }
 
-void KernelTimingSocket::getRxTimestamp(const void *data, size_t size) {
+void Socket::KernelTimingSocket::getRxTimestamp(const void *data, size_t size) {
     bool got_message = false;
     struct timespec* ts_ptr = nullptr;
     while (!got_message) {
@@ -231,7 +231,7 @@ void KernelTimingSocket::getRxTimestamp(const void *data, size_t size) {
     rx_timestamp = {ts_ptr[tstamp_source].tv_sec, ts_ptr[tstamp_source].tv_nsec};
 }
 
-void KernelTimingSocket::enableHardwareTimestampingForDevice(std::string device) {
+void Socket::KernelTimingSocket::enableHardwareTimestampingForDevice(std::string device) {
     bzero(&config, sizeof(config));
     config.tx_type = HWTSTAMP_TX_ON;
     config.rx_filter = HWTSTAMP_FILTER_ALL;

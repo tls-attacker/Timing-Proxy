@@ -4,16 +4,16 @@
 #include <ctime>
 #include <cstdlib>
 #include <cstring>
-#include "../ServerSocket/ServerSocket.h"
+#include "../Socket/ServerSocket/ServerSocket.h"
 #include "../helper/helper.h"
 
  using namespace std::chrono_literals;
 
 #define BUFSIZE (1024)
-#define BASESLEEP (1000)
-#define SLEEPTIMEA (250000)
+#define BASESLEEP (100)
+#define SLEEPTIMEA (7000)
 #define SLEEPTIMEB (0)
-#define NOISERANGE (0)
+#define NOISERANGE (500)
 
 
 
@@ -30,7 +30,7 @@ int main(int argc, char const *argv[])
     write_buf_a[0] = 'a';
     write_buf_b[0] = 'b';
     //helper::initRandomSeed();
-    ServerSocket ss;
+    Socket::ServerSocket ss;
     ss.bind(1337);
     ss.listen();
     ss.accept();

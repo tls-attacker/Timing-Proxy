@@ -6,10 +6,10 @@
 #include <arpa/inet.h>
 #include <iostream>
 
-void PCAPTimingSocket::init() {
+void Socket::PCAPTimingSocket::init() {
 }
 
-PCAPTimingSocket::PCAPTimingSocket() {
+Socket::PCAPTimingSocket::PCAPTimingSocket() {
     init();
 }
 
@@ -27,7 +27,7 @@ bool isValidIpv6Address(const char *ipAddress)
     return result != 0;
 }
 
-void PCAPTimingSocket::connect(std::string host, uint16_t port) {
+void Socket::PCAPTimingSocket::connect(std::string host, uint16_t port) {
     if (!isValidIpv4Address(host.c_str()) && !isValidIpv6Address(host.c_str())){
         throw std::invalid_argument("Current pcap implementation needs an ip address in order to correlate packets.");
     }
@@ -40,23 +40,24 @@ void PCAPTimingSocket::connect(std::string host, uint16_t port) {
     TimingSocket::connect(host, port);
 }
 
-void PCAPTimingSocket::close() {
+void Socket::PCAPTimingSocket::close() {
     pcap->stopLoop();
     TimingSocket::close();
 }
 
-void PCAPTimingSocket::initPcap(std::string device) {
-    pcap = std::make_unique<PcapWrapper>(device.c_str());
+void Socket::PCAPTimingSocket::initPcap(const std::string & device) {
+    this->device = device;
+    pcap = std::make_unique<PcapWrapper>(this->device.c_str());
     pcapInititalized = true;
 }
 
-void PCAPTimingSocket::write(const void *data, size_t size) {
+void Socket::PCAPTimingSocket::write(const void *data, size_t size) {
     TimingSocket::write(data, size);
     tx_timestamp = pcap->timingForPacket(data, size, PcapLoopCallback::PacketDirection::DESTINATION_REMOTE);
     std::cout << "tx_timestamp: "<<tx_timestamp.tv_sec<<" "<<tx_timestamp.tv_usec<<std::endl;
 }
 
-ssize_t PCAPTimingSocket::read(void *buf, size_t size, bool blocking) {
+ssize_t Socket::PCAPTimingSocket::read(void *buf, size_t size, bool blocking) {
     ssize_t bytes_read = TimingSocket::read(buf, size, blocking);
     if (bytes_read > 0) {
         rx_timestamp = pcap->timingForPacket(buf, (size_t)bytes_read, PcapLoopCallback::PacketDirection::SOURCE_REMOTE);
@@ -65,7 +66,7 @@ ssize_t PCAPTimingSocket::read(void *buf, size_t size, bool blocking) {
     return bytes_read;
 }
 
-uint64_t PCAPTimingSocket::getLastMeasurement() {
+uint64_t Socket::PCAPTimingSocket::getLastMeasurement() {
     uint64_t delta = PcapLoopCallback::timevalDeltaToNs(pcap->getPrecision(), &tx_timestamp, &rx_timestamp);
     std::cout << "delta: "<<delta<<std::endl;
     return delta;
