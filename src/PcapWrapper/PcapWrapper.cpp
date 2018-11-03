@@ -107,34 +107,13 @@ PcapWrapper::PcapWrapper(const char *device) {
 }
 
 void PcapWrapper::init() {
-    printf("Device: %s\n", device);
-
-    handle = custom_pcap_open_live(device, BUFSIZ, 1, 1000, errbuf);
-    if (handle == NULL) {
-        fprintf(stderr, "Couldn't open device %s: %s\nThis is probably a permission issue.", device, errbuf);
-        throw;
-    }
-
-    int precision = pcap_get_tstamp_precision(handle);
-    switch (precision) {
-        case PCAP_TSTAMP_PRECISION_MICRO:
-            printf("Using microsecond resolution\n");
-            break;
-            
-        case PCAP_TSTAMP_PRECISION_NANO:
-            printf("Using nanosecond resolution\n");
-            break;
-    }
-    linktype = (PcapLoopCallback::LinkType)pcap_datalink(handle);
-    usrdata.linktype = linktype;
-    usrdata.handle = handle;
-    usrdata.tstamp_precision = precision;
-    printf("Initialized device for listening\n");
+    printf("Using device %s in libpcap\n", device);
+    open();
 }
 
 void PcapWrapper::setFilter(const char* remote_host, uint16_t remote_port){
     std::string filter = "((src port "+std::to_string(remote_port)+" and src "+remote_host + ") or (dst port "+std::to_string(remote_port)+" and dst "+remote_host+"))";
-    std::cout << filter << std::endl;
+
     
     bpf_u_int32 mask;        /* The netmask of our sniffing device */
     bpf_u_int32 net;        /* The IP of our sniffing device */
@@ -153,6 +132,8 @@ void PcapWrapper::setFilter(const char* remote_host, uint16_t remote_port){
         fprintf(stderr, "Couldn't install filter %s: %s\n", filter.c_str(), pcap_geterr(handle));
         throw;
     }
+    std::cout << "Successfully installed Filter:" << std::endl;
+    std::cout << filter << std::endl;
     usrdata.remote_host = remote_host;
     usrdata.remote_port = remote_port;
 }
@@ -200,25 +181,64 @@ struct timeval PcapWrapper::timingForPacket(const void* buf, size_t buflen, Pcap
 }
 
 void loop(PcapLoopCallback::UserData * usrdata) {
-    printf("%s\n", "Starting loop!");
-    pcap_loop(usrdata->handle, -1, PcapLoopCallback::handlePacket, (u_char*)usrdata);
-    printf("%s\n", "Stopping loop!");
+    printf("%s\n", "Starting PCAP loop!");
+    int pcap_loop_err = pcap_loop(usrdata->handle, -1, PcapLoopCallback::handlePacket, (u_char*)usrdata);
+    if (pcap_loop_err == PCAP_ERROR) {
+        std::cerr << pcap_geterr(usrdata->handle);
+    }else if(pcap_loop_err != PCAP_ERROR_BREAK){
+        std::cerr << "pcap_loop terminated with an unknown return value "<<pcap_loop_err<<std::endl;
+    }
+    printf("%s\n", "Stopping PCAP loop!");
 }
 
 void PcapWrapper::startLoop() {
+    usrdata.shared_buffer_index_consumer = 0;
+    usrdata.shared_buffer_index_producer = 0;
+    usrdata.active_buffer_consumer = 0;
+    usrdata.active_buffer_producer = 0;
+    usrdata.stop_loop = false;
     loop_thread = new std::thread(loop, &usrdata);
 }
 
 void PcapWrapper::stopLoop() {
     using namespace std::chrono_literals;
-    auto thread_loop_thread_handle = loop_thread->native_handle();
+    //auto thread_loop_thread_handle = loop_thread->native_handle();
     pcap_breakloop(handle);
     usrdata.stop_loop = true;
-    //loop_thread->join();
+    loop_thread->join();
+    delete loop_thread;
     //std::this_thread::sleep_for(2s);
     // TODO: Terminate thread after timeout if it is blocking
 }
 
 int PcapWrapper::getPrecision() {
     return usrdata.tstamp_precision;
+}
+
+void PcapWrapper::open() {
+    handle = custom_pcap_open_live(device, BUFSIZ, 1, 1000, errbuf);
+    if (handle == NULL) {
+        fprintf(stderr, "Couldn't open device %s: %s\nThis is probably a permission issue.", device, errbuf);
+        throw;
+    }
+
+    int precision = pcap_get_tstamp_precision(handle);
+    switch (precision) {
+        case PCAP_TSTAMP_PRECISION_MICRO:
+            printf("Using microsecond resolution\n");
+            break;
+
+        case PCAP_TSTAMP_PRECISION_NANO:
+            printf("Using nanosecond resolution\n");
+            break;
+    }
+    linktype = (PcapLoopCallback::LinkType)pcap_datalink(handle);
+    usrdata.linktype = linktype;
+    usrdata.handle = handle;
+    usrdata.tstamp_precision = precision;
+    printf("PCAP can now listen on %s\n",device);
+}
+
+void PcapWrapper::close() {
+    pcap_close(handle);
 }

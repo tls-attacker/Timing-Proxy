@@ -9,16 +9,19 @@
 
 
 void TimingProxy::tryForwardInput() {
-    char buf[1024];
-    ssize_t size_read = proxy_input.read(buf, 1024, false);
+    char buf[1500];
+    ssize_t size_read = proxy_input.read(buf, 1500, false);
     if (size_read > 0) {
         proxy_output->write(buf, size_read);
+    }else if(size_read == 0){
+        /* other side closed connection */
+        throw std::runtime_error("Proxy input closed connection");
     }
 }
 
 void TimingProxy::tryForwardOutput() {
-    char buf[1024];
-    ssize_t size_read = proxy_output->read(buf, 1024, false);
+    char buf[1500];
+    ssize_t size_read = proxy_output->read(buf, 1500, false);
 
     if (size_read > 0) {
         proxy_input.write(buf, size_read);
@@ -27,22 +30,48 @@ void TimingProxy::tryForwardOutput() {
         //control.write(timing.c_str(), timing.length());
         uint64_t network_byte_order_tstamp = boost::endian::native_to_big(proxy_output->getLastMeasurement());
         control.write(&network_byte_order_tstamp, sizeof(uint64_t));
+    }else if(size_read == 0){
+        /* other side closed connection */
+        throw std::runtime_error("Proxy output closed connection");
     }
 }
 
 void TimingProxy::run() {
     control.listen();
     proxy_input.listen();
-    control.accept();
-    proxy_input.accept();
-    getProxyTarget();
-    proxy_output->connect(connect_host, connect_port);
-
     while (true) {
-        std::cout << "Still alive!" << std::endl;
-        tryForwardInput();
-        tryForwardOutput();
+        handleClient();
     }
+}
+
+void TimingProxy::handleClient() {
+    control.accept();
+    getProxyTarget();
+    proxy_input.accept();
+    proxy_output->connect(connect_host, connect_port);
+    bool connection_established = true;
+    std::cout << "Proxy connection established!\n" << std::endl;
+
+    while (connection_established) {
+        try{
+            tryForwardInput();
+            tryForwardOutput();
+        }catch (const std::runtime_error& e) {
+            std::cerr << "Terminating proxy connection. Reason: " << e.what() << std::endl;
+            connection_established = false;
+        }
+
+        if (proxy_input.socketPeerClosed() || control.socketPeerClosed() || proxy_output->socketPeerClosed()) {
+            /* If any side closes the connection, shut down */
+            connection_established = false;
+        }
+    }
+
+    /* shut down the connection */
+    std::cout << "Proxy connection closed" << std::endl;
+    proxy_input.close_client();
+    control.close_client();
+    proxy_output->close();
 }
 
 std::tuple<std::string, std::string> TimingProxy::getline(std::string prepend) {
@@ -52,14 +81,14 @@ std::tuple<std::string, std::string> TimingProxy::getline(std::string prepend) {
     char buf[1025];
     size_t pos = std::string::npos;
     while (pos == std::string::npos) {
-        size_t len_read = control.read(buf, 1024);
-        buf[len_read] = 0;
-        std::vector<std::string> strings;
-        str += std::string(buf);
         pos = str.find("\n");
         if (pos!=std::string::npos) {
             head = str.substr(0, pos);
             tail = str.substr(pos+1);
+        }else{
+            size_t len_read = control.read(buf, 1024);
+            buf[len_read] = 0;
+            str += std::string(buf);
         }
     }
     return std::make_tuple(head, tail);
@@ -68,15 +97,14 @@ std::tuple<std::string, std::string> TimingProxy::getline(std::string prepend) {
 void TimingProxy::getProxyTarget() {
     std::tuple<std::string, std::string> result = getline("");
     connect_host = std::get<0>(result);
-    std::cout << connect_host << "\n";
     result = getline(std::get<1>(result));
     connect_port = std::stoi(std::get<0>(result));
-    std::cout << connect_port << "\n";
+    std::cout << "New proxy connection: " << connect_host << ":" << connect_port << "\n";
 }
 
 void TimingProxy::setInterface(std::string interface) {
     if (measurement_technique == Socket::TimingSocket::KindOfSocket::Kernel) {
-        dynamic_cast<Socket::KernelTimingSocket*>(proxy_output.get())->enableHardwareTimestampingForDevice(interface);
+        dynamic_cast<Socket::KernelTimingSocket *>(proxy_output.get())->setDevice(interface);
     }else if(measurement_technique == Socket::TimingSocket::KindOfSocket::PCAP) {
         dynamic_cast<Socket::PCAPTimingSocket*>(proxy_output.get())->initPcap(interface);
     }

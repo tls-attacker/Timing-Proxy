@@ -9,7 +9,8 @@
 #include <cstdint>
 
 namespace Socket{
-    static int enableEpollWithEvents(uint32_t events, int sock);
+    int enableEpollWithEvents(uint32_t events, int sock);
+    bool socketPeerClosed(int epfd);
 };
 
 

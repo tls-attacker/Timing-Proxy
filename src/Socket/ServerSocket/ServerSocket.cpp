@@ -4,7 +4,8 @@
 #include <unistd.h>
 #include <strings.h>
 #include <cstring>
-
+#include <sys/epoll.h>
+#include <iostream>
 
 Socket::ServerSocket::~ServerSocket() {
     if (has_client) {
@@ -35,13 +36,13 @@ void Socket::ServerSocket::bind(int port) {
         throw std::runtime_error(std::string("ServerSocket: Can't set SO_REUSEADDR. Reason: ")+std::string(strerror(errno)));
     }
 
-    if (::bind(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+    if (::bind(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) != 0) {
         throw std::runtime_error(std::string("ServerSocket: Unable to bind socket. Reason: ")+std::string(strerror(errno)));
     }
 }
 
 void Socket::ServerSocket::listen() {
-    int ret = ::listen(sock, 1);
+    int ret = ::listen(sock, 2);
     if (ret != 0) {
         throw std::runtime_error(std::string("ServerSocket: Unable to listen on socket. Reason: ")+std::string(strerror(errno)));
     }
@@ -52,6 +53,8 @@ void Socket::ServerSocket::accept() {
     if (client_sock < 0) {
        throw std::runtime_error(std::string("ServerSocket: Unable to accept client socket. Reason: ")+std::string(strerror(errno)));
     }
+    /* enable epoll with EPOLLRDHUP event*/
+    epfd = Socket::enableEpollWithEvents(EPOLLRDHUP, sock);
     has_client = true;
 }
 
@@ -85,4 +88,8 @@ ssize_t Socket::ServerSocket::write(const void *data, size_t size) {
         write((uint8_t*)data+return_val, size-return_val);
     }
     return return_val;
+}
+
+bool Socket::ServerSocket::socketPeerClosed() {
+    return Socket::socketPeerClosed(epfd);
 }

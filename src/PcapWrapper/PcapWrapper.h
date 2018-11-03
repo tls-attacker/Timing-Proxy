@@ -25,11 +25,14 @@ public:
     PcapWrapper();
     PcapWrapper(const char* device);
 
+    void open();
+    void close();
     void setFilter(const char* remote_host, uint16_t remote_port);
     void startLoop();
     void stopLoop();
     int getPrecision();
     struct timeval timingForPacket(const void* buf, size_t buflen, PcapLoopCallback::PacketDirection direction = PcapLoopCallback::PacketDirection::DESTINATION_REMOTE);
+
 };
 
 

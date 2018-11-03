@@ -25,10 +25,10 @@ void Socket::CPUTimingSocket::write(const void *data, size_t size) {
         /*end timing*/
         read_tstamp = best_timesource();
     }
-    std::cout << "Set tx_tstamp: "<<write_tstamp<<std::endl;
-    if (takeTimeOnWrite) {
+    //std::cout << "Set tx_tstamp: "<<write_tstamp<<std::endl;
+    /*if (takeTimeOnWrite) {
         std::cout << "Set rx_tstamp: "<<read_tstamp<<std::endl;
-    }
+    }*/
 }
 
 ssize_t Socket::CPUTimingSocket::read(void *buf, size_t size, bool blocking) {
@@ -37,13 +37,12 @@ ssize_t Socket::CPUTimingSocket::read(void *buf, size_t size, bool blocking) {
         return bytes_read;
     }else{
         read_tstamp = best_timesource();
-        std::cout << "Set rx_tstamp: "<<read_tstamp<<std::endl;
+        //std::cout << "Set rx_tstamp: "<<read_tstamp<<std::endl;
         return bytes_read;
     }
 }
 
 uint64_t Socket::CPUTimingSocket::getLastMeasurement() {
-    std::cout << "diff: "<<read_tstamp-write_tstamp<<std::endl;
     return read_tstamp-write_tstamp;
 }
 

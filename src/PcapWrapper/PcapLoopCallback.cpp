@@ -83,6 +83,8 @@ void PcapLoopCallback::handlePacket(u_char *args, const struct pcap_pkthdr *head
         return;
     }
 
+    //std::cerr << "Got a payload!" << std::endl << payload_size << std::endl;
+
     PacketDirection direction;
     if(usrdata->remote_host == std::string(artefacts.dst_ip) && usrdata->remote_port == artefacts.dst_port) {
         direction = DESTINATION_REMOTE;

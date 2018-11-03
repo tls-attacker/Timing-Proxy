@@ -1,12 +1,14 @@
 #include "TimingSocket.h"
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/epoll.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <errno.h>
 #include <cstring>
 #include <stdexcept>
+#include <iostream>
 #include "CPUTimingSocket/CPUTimingSocket.h"
 #include "KernelTimingSocket/KernelTimingSocket.h"
 #include "PCAPTimingSocket/PCAPTimingSocket.h"
@@ -51,7 +53,9 @@ void Socket::TimingSocket::connect(std::string host, uint16_t port) {
     if (sock < 0) {
         throw std::runtime_error(std::string("Unable to open socket for host \""+host+":"+std::to_string(port)+"\""));
     }
-    
+
+    /* enable epoll with EPOLLRDHUP event*/
+    epfd = Socket::enableEpollWithEvents(EPOLLERR | EPOLLHUP | EPOLLRDHUP , sock);
     freeaddrinfo(res0);
 }
 
@@ -86,6 +90,10 @@ ssize_t Socket::TimingSocket::read(void *buf, size_t size, bool blocking) {
 void Socket::TimingSocket::close() {
     ::close(sock);
     state = SOCKSTATE_CLOSED;
+}
+
+bool Socket::TimingSocket::socketPeerClosed() {
+    return Socket::socketPeerClosed(epfd);
 }
 
 std::unique_ptr<Socket::TimingSocket> Socket::TimingSocket::createTimingSocket(KindOfSocket kind){

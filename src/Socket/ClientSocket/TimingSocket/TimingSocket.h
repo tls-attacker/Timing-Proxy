@@ -18,6 +18,7 @@ namespace Socket{
 
     protected:
         int sock;
+        int epfd;
         std::string host;
         int port;
 
@@ -33,6 +34,7 @@ namespace Socket{
         virtual ssize_t read(void *buf, size_t size, bool blocking);
         virtual void write(const void* data, size_t size);
         virtual uint64_t getLastMeasurement() = 0;
+        bool socketPeerClosed();
 
         static std::unique_ptr<TimingSocket> createTimingSocket(KindOfSocket kind);
     };

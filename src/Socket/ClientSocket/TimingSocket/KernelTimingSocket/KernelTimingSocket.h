@@ -17,13 +17,18 @@ static const uint32_t SO_TIMESTAMPING_OPTIONS_SOFTWARE = SOF_TIMESTAMPING_RX_SOF
 
 namespace Socket{
     class KernelTimingSocket : public Socket::TimingSocket{
+        static const size_t TIMESTAMPING_MESSAGE_MAX_RETRIES = 1000;
         enum TSTAMP_SOURCE {
             SOFTWARE = 0,
             HARDWARE = 2,
         };
         TSTAMP_SOURCE tstamp_source;
+        std::string device;
         hwtstamp_config config;
         ifreq interface_request;
+        bool deviceSupportsHardwareTimestamping = false;
+        void initializeDeviceForHardwareTimestamping();
+        void initializeSocketForHardwareTimestamping();
         void init() override;
         void getTxTimestamp(const void *data, size_t size);
         void getRxTimestamp(const void *data, size_t size);
@@ -37,7 +42,7 @@ namespace Socket{
         void write(const void* data, size_t size) override;
         ssize_t read(void *buf, size_t size, bool blocking) override;
         uint64_t getLastMeasurement() override;
-        void enableHardwareTimestampingForDevice(std::string device);
+        void setDevice(std::string device);
     };
 }
 

@@ -15,6 +15,7 @@ class TimingProxy {
     void getProxyTarget();
     void tryForwardInput();
     void tryForwardOutput();
+    void handleClient();
     Socket::TimingSocket::KindOfSocket measurement_technique;
     
 public:
