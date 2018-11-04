@@ -31,8 +31,10 @@ PCAP_API pcap_t * custom_pcap_open_live(const char *device, int snaplen, int pro
         fprintf(stderr ,"%s", pcap_geterr(p));
     
     if (n_tstamp_types == 0) {
-        fprintf(stderr, "Time stamp type cannot be set for %s\n",
+        fprintf(stderr, "Timestamp type cannot be set for %s\n",
                 device);
+    }else{
+        fprintf(stderr, "Available timestamp types:\n");
     }
     
     int best_timestamp_type_available = PCAP_TSTAMP_HOST;
@@ -54,6 +56,9 @@ PCAP_API pcap_t * custom_pcap_open_live(const char *device, int snaplen, int pro
         int err = pcap_set_tstamp_type(p, best_timestamp_type_available);
         if (err) {
             fprintf(stderr, "Error when setting tstamp_type %d\n", best_timestamp_type_available);
+        }else{
+            fprintf(stderr, "Active timestamp type:\n  %s (%s)\n", pcap_tstamp_type_val_to_name(best_timestamp_type_available),
+                    pcap_tstamp_type_val_to_description(best_timestamp_type_available));
         }
     }
 
