@@ -50,7 +50,7 @@ PCAP_API pcap_t * custom_pcap_open_live(const char *device, int snaplen, int pro
             best_timestamp_type_available = tstamp_types[i];
         }
     }
-    
+
     pcap_free_tstamp_types(tstamp_types);
     if (n_tstamp_types > 0){
         int err = pcap_set_tstamp_type(p, best_timestamp_type_available);
@@ -166,7 +166,6 @@ struct timeval PcapWrapper::timingForPacket(const void* buf, size_t buflen, Pcap
 
         PcapLoopCallback::PacketInfo* current_buffer = usrdata.active_buffer_consumer ? usrdata.shared_buffer_b : usrdata.shared_buffer_a;
         PcapLoopCallback::PacketInfo& candidate = current_buffer[usrdata.shared_buffer_index_consumer];
-
 
         /* test if we found a match */
         if (
