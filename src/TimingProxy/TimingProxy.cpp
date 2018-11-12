@@ -16,6 +16,8 @@ void TimingProxy::tryForwardInput() {
     }else if(size_read == 0){
         /* other side closed connection */
         throw std::runtime_error("Proxy input closed connection");
+    }else if(size_read != -1){
+        std::cout << "reading from client returned: "<<size_read<<std::endl;
     }
 }
 
@@ -33,6 +35,8 @@ void TimingProxy::tryForwardOutput() {
     }else if(size_read == 0){
         /* other side closed connection */
         throw std::runtime_error("Proxy output closed connection");
+    }else if(size_read != -1){
+        std::cout << "reading from server returned: "<<size_read<<std::endl;
     }
 }
 

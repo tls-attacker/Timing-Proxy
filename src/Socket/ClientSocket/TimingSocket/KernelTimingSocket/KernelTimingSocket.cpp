@@ -10,6 +10,8 @@
 #include <sys/socket.h>
 #include "../../../../PacketParser/PacketParser.h"
 #include "../../../../PacketParser/Artefacts/Artefacts.h"
+#include <chrono>
+#include <thread>
 
 uint64_t timespecDiff(struct timespec after, struct timespec before) {
     if (after.tv_sec < before.tv_sec || (after.tv_sec == before.tv_sec && after.tv_nsec < before.tv_nsec)) {
@@ -57,8 +59,7 @@ void Socket::KernelTimingSocket::getTxTimestamp(const void *data, size_t size) {
     bool found_message_in_errqueue = false;
     size_t retries = 0;
     struct timespec* ts_ptr = nullptr;
-    while (!found_message_in_errqueue && retries<TIMESTAMPING_MESSAGE_MAX_RETRIES) {
-        retries++;
+    for (size_t retries = 0; !found_message_in_errqueue && retries < TIMESTAMPING_MESSAGE_MAX_RETRIES; ++retries) {
         ssize_t rc;
         struct iovec vec[1];
         struct msghdr msg;
@@ -83,8 +84,10 @@ void Socket::KernelTimingSocket::getTxTimestamp(const void *data, size_t size) {
         msg.msg_control = cmsg_un.control;
         msg.msg_controllen = sizeof(cmsg_un.control);
         rc = recvmsg(sock, &msg, MSG_ERRQUEUE);
+        using namespace std::chrono_literals;
         if (rc < 0 && errno == EAGAIN) {
             if (errno == EAGAIN) {
+                std::this_thread::sleep_for(1ms);
                 continue;
             }else{
                 throw;
@@ -101,7 +104,7 @@ void Socket::KernelTimingSocket::getTxTimestamp(const void *data, size_t size) {
         }
 
         if (msg.msg_controllen <= 0) {
-            printf("`received short ancillary data (%ld/%ld)`\n",
+            printf("received short ancillary data (%ld/%ld)\n",
                    (long)msg.msg_controllen, (long)sizeof(cmsg_un.control));
             continue;
         }

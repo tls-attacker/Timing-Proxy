@@ -89,6 +89,7 @@ ssize_t Socket::TimingSocket::read(void *buf, size_t size, bool blocking) {
 
 void Socket::TimingSocket::close() {
     ::close(sock);
+    ::close(epfd);
     state = SOCKSTATE_CLOSED;
 }
 

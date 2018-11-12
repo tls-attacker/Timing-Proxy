@@ -54,12 +54,13 @@ void Socket::ServerSocket::accept() {
        throw std::runtime_error(std::string("ServerSocket: Unable to accept client socket. Reason: ")+std::string(strerror(errno)));
     }
     /* enable epoll with EPOLLRDHUP event*/
-    epfd = Socket::enableEpollWithEvents(EPOLLRDHUP, sock);
+    epfd = Socket::enableEpollWithEvents(EPOLLERR | EPOLLHUP | EPOLLRDHUP, sock);
     has_client = true;
 }
 
 void Socket::ServerSocket::close_client() {
     ::close(client_sock);
+    ::close(epfd);
     has_client = false;
 }
 
