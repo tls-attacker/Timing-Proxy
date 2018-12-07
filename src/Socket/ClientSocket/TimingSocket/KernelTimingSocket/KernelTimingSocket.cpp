@@ -57,7 +57,6 @@ uint64_t Socket::KernelTimingSocket::getLastMeasurement() {
 
 void Socket::KernelTimingSocket::getTxTimestamp(const void *data, size_t size) {
     bool found_message_in_errqueue = false;
-    size_t retries = 0;
     struct timespec* ts_ptr = nullptr;
     for (size_t retries = 0; !found_message_in_errqueue && retries < TIMESTAMPING_MESSAGE_MAX_RETRIES; ++retries) {
         ssize_t rc;
@@ -68,7 +67,7 @@ void Socket::KernelTimingSocket::getTxTimestamp(const void *data, size_t size) {
 
         union {
             struct cmsghdr cm;
-            char control[256];
+            char control[512];
         } cmsg_un;
 
         vec[0].iov_base = data_buf;
@@ -94,17 +93,17 @@ void Socket::KernelTimingSocket::getTxTimestamp(const void *data, size_t size) {
             }
         }
         if (msg.msg_flags & MSG_TRUNC) {
-            printf("received truncated message\n");
+            printf("TX: received truncated message\n");
             continue;
         }
 
         if (msg.msg_flags & MSG_CTRUNC) {
-            printf("received truncated ancillary data\n");
+            printf("TX: received truncated ancillary data\n");
             continue;
         }
 
         if (msg.msg_controllen <= 0) {
-            printf("received short ancillary data (%ld/%ld)\n",
+            printf("TX: received short ancillary data (%ld/%ld)\n",
                    (long)msg.msg_controllen, (long)sizeof(cmsg_un.control));
             continue;
         }
@@ -145,7 +144,7 @@ ssize_t Socket::KernelTimingSocket::read(void *buf, size_t size, bool blocking) 
 
     union {
         struct cmsghdr cm;
-        char control[256];
+        char control[512];
     } cmsg_un;
 
     vec[0].iov_base = buf;
@@ -177,19 +176,19 @@ ssize_t Socket::KernelTimingSocket::read(void *buf, size_t size, bool blocking) 
         }
     }
     if (msg.msg_flags & MSG_TRUNC) {
-        printf("received truncated message\n");
+        printf("RX: received truncated message\n");
         throw;
     }
 
     if (msg.msg_flags & MSG_CTRUNC) {
-        printf("received truncated ancillary data\n");
+        printf("RX: received truncated ancillary data\n");
         throw;
     }
 
     if (msg.msg_controllen <= 0) {
-        printf("received short ancillary data (%ld/%ld)\n",
+        printf("RX: received short ancillary data (%ld/%ld)\n",
                (long)msg.msg_controllen, (long)sizeof(cmsg_un.control));
-        throw;
+        return -1;
     }
 
     cmsg = CMSG_FIRSTHDR(&msg);

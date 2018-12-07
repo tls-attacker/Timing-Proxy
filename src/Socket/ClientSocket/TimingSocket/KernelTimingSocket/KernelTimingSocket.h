@@ -31,7 +31,6 @@ namespace Socket{
         void initializeSocketForHardwareTimestamping();
         void init() override;
         void getTxTimestamp(const void *data, size_t size);
-        void getRxTimestamp(const void *data, size_t size);
         timespec tx_timestamp;
         timespec rx_timestamp;
 
