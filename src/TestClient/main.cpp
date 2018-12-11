@@ -80,6 +80,7 @@ int main(int argc, char const *argv[])
 
     for (size_t j=0; j<measurements; j++) {
         for (size_t i = 0; i < SAMPLESIZE; i++) {
+            write_buf[0] = i%256;
             ts->write(write_buf, BUFSIZE);
             ssize_t read_size = ts->read(read_buf, BUFSIZE, true);
             times[i].push_back(ts->getLastMeasurement());
