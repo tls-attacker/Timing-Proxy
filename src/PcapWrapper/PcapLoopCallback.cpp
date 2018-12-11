@@ -17,11 +17,6 @@
 using namespace std::chrono_literals;
 
 uint64_t PcapLoopCallback::timevalDeltaToNs(int tstamp_precision, const struct timeval* tv_early, const struct timeval* tv_late) {
-    /* HACK for non monoton timestamps */
-    long* late_secs = (long*)&tv_late->tv_sec;
-    (*late_secs) += 3;
-    /* END HACK */
-
     uint64_t usecs_per_second = 0;
     if (tstamp_precision == PCAP_TSTAMP_PRECISION_MICRO) {
         usecs_per_second =    1000000;
