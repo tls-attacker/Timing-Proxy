@@ -19,7 +19,6 @@ namespace po = boost::program_options;
 
 #define BUFSIZE 1024
 #define SAMPLESIZE 2
-#define SAMPLEREPETITIONS 8192
 
 void print_array(uint64_t values[], size_t size) {
     std::cout << "[ " <<std::endl;
@@ -64,6 +63,7 @@ int main(int argc, char const *argv[])
     std::string host;
     int port;
     std::string outfile;
+    size_t measurements;
     po::options_description desc("Allowed options");
     desc.add_options()
             ("help,h", "produce help message")
@@ -71,7 +71,8 @@ int main(int argc, char const *argv[])
             ("interface,i", po::value<std::string>(&interface)->default_value("lo"), "set interface to be used by PCAP")
             ("host", po::value<std::string>(&host)->default_value("127.0.0.1"), "set host of oracle")
             ("port,p", po::value<int>(&port)->default_value(1337), "set port of oracle")
-            ("outfile,o", po::value<std::string>(&outfile)->default_value("measurements.csv"), "set output csv for mona timing report");
+            ("outfile,o", po::value<std::string>(&outfile)->default_value("measurements.csv"), "set output csv for mona timing report")
+            ("measurements,m", po::value<size_t>(&measurements)->default_value(1024), "set amount of measurements for each secret");
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
@@ -97,7 +98,10 @@ int main(int argc, char const *argv[])
     memset(write_buf, 0, BUFSIZE);
     // strcpy(write_buf, "Testcase");
     std::string correct_case[SAMPLESIZE];
-    uint64_t times[SAMPLESIZE][SAMPLEREPETITIONS];
+    std::vector<uint64_t> times[SAMPLESIZE];
+    for (size_t i = 0; i< SAMPLESIZE; i++) {
+        times[i].reserve(measurements);
+    }
     uint64_t medians[SAMPLESIZE];
     uint64_t overall_median = 0;
     std::unique_ptr<Socket::TimingSocket> ts = Socket::TimingSocket::createTimingSocket(measurement_technique);
@@ -108,22 +112,22 @@ int main(int argc, char const *argv[])
     }
     ts->connect(host, port);
     for (size_t i = 0; i<SAMPLESIZE; i++) {
-        for (size_t j=0; j<SAMPLEREPETITIONS; j++) {
+        for (size_t j=0; j<measurements; j++) {
             ts->write(write_buf, BUFSIZE);
             ssize_t read_size = ts->read(read_buf, BUFSIZE, true);
-            times[i][j] = ts->getLastMeasurement();
+            times[i].push_back(ts->getLastMeasurement());
             //std::cout << "Measured! "<<times[i][j] << std::endl;
             if (j==0) {
                 correct_case[i] = std::string(read_buf);
             }
         }
-        medians[i] = median(times[i], SAMPLEREPETITIONS);
+        medians[i] = median(&times[i][0], measurements);
 
         // cout << "Read " << read_size << " Bytes: " << correct_case[i] << endl;
         cout << "Median: " << medians[i] << ", " << std::endl;
         write_buf[0]++;
     }
-    overall_median = median(medians, SAMPLESIZE);
+    overall_median = median(medians, measurements);
     cout << "The median is: " << overall_median << endl;
     size_t success_rate = 0;
 
@@ -150,7 +154,7 @@ int main(int argc, char const *argv[])
     ofstream csv_file;
     csv_file.open (outfile);
     size_t ctr = 0;
-    for (size_t j=0; j<SAMPLEREPETITIONS; j++) {
+    for (size_t j=0; j<measurements; j++) {
         for (size_t i = 0; i<SAMPLESIZE; i++) {
             csv_file << ctr << ";" << i << ";" << times[i][j] << "\n";
             ctr++;
