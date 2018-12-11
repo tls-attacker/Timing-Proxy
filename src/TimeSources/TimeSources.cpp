@@ -16,11 +16,22 @@
 #include <unistd.h>
 
 #if defined(__x86_64__) || defined(__i386)
+#ifdef NO_RDTSCP
+inline uint64_t rdtsc(){
+    uint32_t lo,hi;
+    __asm__ __volatile__ (
+            "CPUID\n\t"
+            "RDTSC" : "=a" (lo), "=d" (hi)
+            );
+    return ((uint64_t)hi << 32) | lo;
+}
+#else
 inline uint64_t rdtsc(){
     uint32_t lo,hi;
     __asm__ __volatile__ ("RDTSCP" : "=a" (lo), "=d" (hi));
     return ((uint64_t)hi << 32) | lo;
 }
+#endif
 #endif
 
 uint64_t TimeSources::timestampCounter() {

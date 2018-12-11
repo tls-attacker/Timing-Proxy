@@ -211,7 +211,7 @@ void Socket::KernelTimingSocket::setDevice(std::string device) {
 
 void Socket::KernelTimingSocket::initializeDeviceForHardwareTimestamping() {
     /* try to read the current configuration */
-    bzero(&config, sizeof(config));;
+    bzero(&config, sizeof(config));
     bzero(&interface_request, sizeof(interface_request));
     strncpy(interface_request.ifr_name, device.c_str(), IFNAMSIZ);
     interface_request.ifr_data = (char*)&config;
@@ -232,7 +232,6 @@ void Socket::KernelTimingSocket::initializeDeviceForHardwareTimestamping() {
     ioctl_err = ioctl(sock, SIOCSHWTSTAMP, &interface_request);
     if (ioctl_err) {
         std::cerr << "Hardware Timestamping cannot be enabled for the device "<<interface_request.ifr_name<<" due to the following reason: "<<strerror(errno)<<std::endl;
-        //throw;
         deviceSupportsHardwareTimestamping = false;
     }else{
         std::cout << "Enabled hardware timestamping for "<<device<<" in the driver"<<std::endl;
