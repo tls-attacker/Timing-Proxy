@@ -7,10 +7,12 @@
 #include <tuple>
 #include <boost/endian/conversion.hpp>
 
+#define BUFSIZE (2500)
+
 
 void TimingProxy::tryForwardInput() {
-    char buf[1500];
-    ssize_t size_read = proxy_input.read(buf, 1500, false);
+    char buf[BUFSIZE];
+    ssize_t size_read = proxy_input.read(buf, BUFSIZE, false);
     if (size_read > 0) {
         proxy_output->write(buf, size_read);
     }else if(size_read == 0){
@@ -22,8 +24,8 @@ void TimingProxy::tryForwardInput() {
 }
 
 void TimingProxy::tryForwardOutput() {
-    char buf[1500];
-    ssize_t size_read = proxy_output->read(buf, 1500, false);
+    char buf[BUFSIZE];
+    ssize_t size_read = proxy_output->read(buf, BUFSIZE, false);
 
     if (size_read > 0) {
         proxy_input.write(buf, size_read);
