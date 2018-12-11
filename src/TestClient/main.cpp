@@ -149,7 +149,6 @@ int main(int argc, char const *argv[])
     /* Write timing samples in CSV for analysis with mona timing report */
     ofstream csv_file;
     csv_file.open (outfile);
-    csv_file << "Writing this to a file.\n";
     size_t ctr = 0;
     for (size_t j=0; j<SAMPLEREPETITIONS; j++) {
         for (size_t i = 0; i<SAMPLESIZE; i++) {

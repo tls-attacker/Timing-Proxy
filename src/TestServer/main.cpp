@@ -11,7 +11,7 @@
 
 #define BUFSIZE (1024)
 #define BASESLEEP (100)
-#define SLEEPTIMEA (7000)
+#define SLEEPTIMEA (700)
 #define SLEEPTIMEB (0)
 #define NOISERANGE (500)
 
