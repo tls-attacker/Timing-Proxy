@@ -1,1 +1,6 @@
+option(DISABLE_RDTSCP "Disable rdtscp instruction if not available" OFF)
+if (DISABLE_RDTSCP)
+    add_compile_definitions(DISABLE_RDTSCP)
+endif (DISABLE_RDTSCP)
 add_library(TimeSources OBJECT TimeSources.cpp TimeSources.h)
+UNSET(DISABLE_RDTSCP)
