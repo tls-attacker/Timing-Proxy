@@ -19,7 +19,7 @@ namespace po = boost::program_options;
 
 #define BUFSIZE 1024
 #define SAMPLESIZE 2
-#define SAMPLEREPETITIONS 200
+#define SAMPLEREPETITIONS 8192
 
 void print_array(uint64_t values[], size_t size) {
     std::cout << "[ " <<std::endl;
@@ -71,7 +71,7 @@ int main(int argc, char const *argv[])
             ("interface,i", po::value<std::string>(&interface)->default_value("lo"), "set interface to be used by PCAP")
             ("host", po::value<std::string>(&host)->default_value("127.0.0.1"), "set host of oracle")
             ("port,p", po::value<int>(&port)->default_value(1337), "set port of oracle")
-            ("outfile,o", po::value<std::string>(outfile)->default_value("measurements.csv"), "set output csv for mona timing report");
+            ("outfile,o", po::value<std::string>(&outfile)->default_value("measurements.csv"), "set output csv for mona timing report");
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
