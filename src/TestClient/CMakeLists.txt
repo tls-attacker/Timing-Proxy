@@ -5,6 +5,7 @@ add_executable(TestClient main.cpp ../helper/helper.h $<TARGET_OBJECTS:Socket> $
 find_package(PCAP REQUIRED)
 include_directories(${PCAP_INCLUDE_DIR})
 target_link_libraries(TestClient ${PCAP_LIBRARY})
+target_link_libraries(TestClient Boost::program_options)
 
 FIND_PACKAGE ( Threads REQUIRED )
 TARGET_LINK_LIBRARIES (TestClient ${CMAKE_THREAD_LIBS_INIT} )
