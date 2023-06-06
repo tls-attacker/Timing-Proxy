@@ -164,6 +164,10 @@ ssize_t Socket::KernelTimingSocket::read(void *buf, size_t size, bool blocking) 
         flags = flags | MSG_DONTWAIT;
     }
     rc = recvmsg(sock, &msg, flags);
+    if(rc == 0) {
+        // peer closed
+        return rc;
+    }
     if (rc < 0) {
         switch (errno) {
             case EAGAIN:
