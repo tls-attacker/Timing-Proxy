@@ -49,25 +49,23 @@ void Socket::TimingSocket::connect(std::string host, uint16_t port) {
         }
         int attempts = 0;
         while(sock < 0 && attempts < 100) {
-			std::cout << "Failed to reach host. Will sleep and try again.\n" << std::endl;
-			std::this_thread::sleep_for(std::chrono::milliseconds(5));
-			sock = socket(res->ai_family, res->ai_socktype,
+            std::cout << "Failed to reach host. Will sleep and try again.\n" << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            sock = socket(res->ai_family, res->ai_socktype,
                    res->ai_protocol);
-			if (::connect(sock, res->ai_addr, res->ai_addrlen) < 0) {
-				::close(sock);
-				sock = -1;
-			} else {
-				std::cout << "Managed to connect in new attempt.\n" << std::endl;
-			}
-			attempts +=1;
-		}
-		if(sock < 0) {
-			continue;
-		}
+            if (::connect(sock, res->ai_addr, res->ai_addrlen) < 0) {
+                ::close(sock);
+                sock = -1;
+            }
+            attempts++;
+        }
+        if(sock < 0) {
+            continue;
+        }
         /* socket opened */
         state = SOCKSTATE_ESTABLISHED;
         break;
-}
+    }
     if (sock < 0) {
         throw std::runtime_error(std::string("Unable to open socket for host \""+host+":"+std::to_string(port)+"\""));
     }
