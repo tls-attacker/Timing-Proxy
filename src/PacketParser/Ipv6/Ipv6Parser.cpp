@@ -9,6 +9,7 @@
 
 #include <arpa/inet.h>
 #include <cstring>
+#include <stdexcept>
 
 bool Ipv6Parser::isExtensionHeader(uint8_t next_hdr) {
     return HeaderTypeMap.at((NextHeaderType)next_hdr)==hk_extension_header;
